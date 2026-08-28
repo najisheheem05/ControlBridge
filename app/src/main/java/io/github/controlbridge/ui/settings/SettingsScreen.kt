@@ -206,6 +206,28 @@ fun CoreSettingsScreen(
                     onValueChange = { GlobalConfig.ENABLE_RUMBLE.boolean = it }
                 )
             }
+
+            item(key = "swipe_hold_delay") {
+                IntSetting(
+                    title = "Swipe vs Hold Delay",
+                    summary = "Time window before a touch is considered a hold to charge power. Higher values give more time to swipe without accidental taps.",
+                    value = { GlobalConfig.SWIPE_HOLD_DELAY.int },
+                    onValueChange = { GlobalConfig.SWIPE_HOLD_DELAY.int = it },
+                    labelsId = R.array.swipe_hold_delay_labels,
+                    valuesId = R.array.swipe_hold_delay_values
+                )
+            }
+
+            item(key = "swipe_sensitivity") {
+                IntSetting(
+                    title = "Swipe Sensitivity",
+                    summary = "Minimum drag distance to recognize a swipe direction",
+                    value = { GlobalConfig.SWIPE_DISTANCE_THRESHOLD.int },
+                    onValueChange = { GlobalConfig.SWIPE_DISTANCE_THRESHOLD.int = it },
+                    labelsId = R.array.swipe_sensitivity_labels,
+                    valuesId = R.array.swipe_sensitivity_values
+                )
+            }
         }
     }
 }

@@ -29,6 +29,8 @@ data class ConfigModel(
     // (Core)
     val inputUpdateRate: Int = 500,
     val enableRumble: Boolean = true,
+    val swipeHoldDelay: Int = 100,
+    val swipeDistanceThreshold: Int = 25,
     // (Display)
     val showLatency: Boolean = true,
     // Theme Settings
@@ -52,6 +54,8 @@ object GlobalConfig {
     val themeMode = configFlow.map { it.themeMode }.distinctUntilChanged()
     val enableRumbleFlow = configFlow.map { it.enableRumble }.distinctUntilChanged()
     val showLatencyFlow = configFlow.map { it.showLatency }.distinctUntilChanged()
+    val swipeHoldDelayFlow = configFlow.map { it.swipeHoldDelay }.distinctUntilChanged()
+    val swipeDistanceThresholdFlow = configFlow.map { it.swipeDistanceThreshold }.distinctUntilChanged()
 
     fun init(context: Context) {
         configFile = File(context.getExternalFilesDir(null), "config.json")
@@ -98,6 +102,24 @@ object GlobalConfig {
             get() = config.enableRumble
             set(value) {
                 config = config.copy(enableRumble = value)
+                save()
+            }
+    }
+
+    object SWIPE_HOLD_DELAY {
+        var int: Int
+            get() = config.swipeHoldDelay
+            set(value) {
+                config = config.copy(swipeHoldDelay = value)
+                save()
+            }
+    }
+
+    object SWIPE_DISTANCE_THRESHOLD {
+        var int: Int
+            get() = config.swipeDistanceThreshold
+            set(value) {
+                config = config.copy(swipeDistanceThreshold = value)
                 save()
             }
     }

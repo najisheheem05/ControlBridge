@@ -27,4 +27,34 @@
         <item>1</item>
         <item>2</item>
     </integer-array>
+
+    <string-array name="swipe_hold_delay_labels">
+        <item>50ms (Ultra fast)</item>
+        <item>75ms (Fast)</item>
+        <item>100ms (Recommended / Default)</item>
+        <item>125ms (Forgiving)</item>
+        <item>150ms (Extra forgiving)</item>
+        <item>200ms (Max swipe window)</item>
+    </string-array>
+
+    <integer-array name="swipe_hold_delay_values">
+        <item>50</item>
+        <item>75</item>
+        <item>100</item>
+        <item>125</item>
+        <item>150</item>
+        <item>200</item>
+    </integer-array>
+
+    <string-array name="swipe_sensitivity_labels">
+        <item>High (20px - Quickest trigger)</item>
+        <item>Normal (25px - Default)</item>
+        <item>Low (32px - Needs further drag)</item>
+    </string-array>
+
+    <integer-array name="swipe_sensitivity_values">
+        <item>20</item>
+        <item>25</item>
+        <item>32</item>
+    </integer-array>
 </resources>

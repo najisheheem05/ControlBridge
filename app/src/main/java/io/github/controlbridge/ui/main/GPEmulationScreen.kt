@@ -94,6 +94,7 @@ import io.github.controlbridge.transport.TransportManager
 import io.github.controlbridge.utils.settings.GlobalConfig
 import io.github.controlbridge.viewmodel.GPEmulationViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -125,11 +126,13 @@ fun GPEmulationScreen(
         val startTimeMs: Long,
         val controlId: String,
         var activeAction: MappingEngine.ActiveAction? = null,
-        var currentGesture: GestureType = GestureType.TAP
+        var currentGesture: GestureType = GestureType.TAP,
+        var holdTimerJob: Job? = null
     )
     val pointerTracks = remember { mutableStateMapOf<PointerId, TouchTrack>() }
-
-    val gestureRecognizer = remember { GestureRecognizer() }
+    val swipeHoldDelayMs by GlobalConfig.swipeHoldDelayFlow.collectAsState(100)
+    val swipeDistanceThreshold by GlobalConfig.swipeDistanceThresholdFlow.collectAsState(25)
+    val gestureRecognizer = remember(swipeDistanceThreshold) { GestureRecognizer(swipeDistanceThreshold.toFloat()) }
     val macroEngine = remember { MacroEngine(scope) }
     val mappingEngine = remember {
         MappingEngine(macroEngine, scope).also { engine ->
@@ -180,7 +183,7 @@ fun GPEmulationScreen(
                         )
                     }
                 }
-                .pointerInput(Unit, activeMode) {
+                .pointerInput(activeMode, swipeHoldDelayMs, gestureRecognizer) {
                     awaitPointerEventScope {
                         var cameraPointer: PointerId? = null
                         var lastPos = Offset.Zero
@@ -199,13 +202,45 @@ fun GPEmulationScreen(
                                         ?.key
 
                                     if (hit != null && hit.enabled) {
-                                        // Record touch start — do NOT fire anything yet
+                                        val hasSwipeMappings = activeMode.mappings.any {
+                                            it.controlId == hit.id && (
+                                                it.gesture == GestureType.SWIPE_UP ||
+                                                it.gesture == GestureType.SWIPE_DOWN ||
+                                                it.gesture == GestureType.SWIPE_LEFT ||
+                                                it.gesture == GestureType.SWIPE_RIGHT
+                                            )
+                                        }
+
+                                        val tapMapping = activeMode.mappings.find {
+                                            it.controlId == hit.id && it.gesture == GestureType.TAP
+                                        }
+                                        val tapAction = tapMapping?.action ?: MappingAction.ButtonPress(hit.key)
+
+                                        var initialAction: MappingEngine.ActiveAction? = null
+                                        var holdJob: Job? = null
+
+                                        if (!hasSwipeMappings) {
+                                            // No swipe mappings: activate immediately at t = 0ms!
+                                            initialAction = mappingEngine.startAction(tapAction, activeMode, viewModel.transport)
+                                        } else {
+                                            // Has swipe mappings: start configurable micro-hold timer for real-time power charge
+                                            val currentDelay = swipeHoldDelayMs.toLong()
+                                            holdJob = scope.launch(Dispatchers.Default) {
+                                                delay(currentDelay)
+                                                val track = pointerTracks[change.id] ?: return@launch
+                                                if (track.activeAction == null) {
+                                                    track.activeAction = mappingEngine.startAction(tapAction, activeMode, viewModel.transport)
+                                                }
+                                            }
+                                        }
+
                                         pointerTracks[change.id] = TouchTrack(
                                             startPos = change.position,
                                             startTimeMs = System.currentTimeMillis(),
                                             controlId = hit.id,
-                                            activeAction = null,
-                                            currentGesture = GestureType.TAP
+                                            activeAction = initialAction,
+                                            currentGesture = GestureType.TAP,
+                                            holdTimerJob = holdJob
                                         )
                                         controlPointers.add(change.id)
                                         return@forEach
@@ -218,11 +253,14 @@ fun GPEmulationScreen(
 
                                     val detectedSwipe = gestureRecognizer.checkSwipe(track.startPos, change.position)
                                     if (detectedSwipe != null && detectedSwipe != track.currentGesture) {
+                                        // Swipe detected! Cancel the hold timer so tap is never fired
+                                        track.holdTimerJob?.cancel()
+                                        track.holdTimerJob = null
+
                                         val swipeMapping = activeMode.mappings.find {
                                             it.controlId == track.controlId && it.gesture == detectedSwipe
                                         }
                                         if (swipeMapping != null) {
-                                            // Release any previous action (e.g. if user changed swipe direction)
                                             track.activeAction?.release()
                                             track.activeAction = mappingEngine.startAction(
                                                 swipeMapping.action,
@@ -239,9 +277,10 @@ fun GPEmulationScreen(
                                     val track = pointerTracks.remove(change.id)
                                     if (track != null) {
                                         controlPointers.remove(change.id)
+                                        track.holdTimerJob?.cancel()
 
                                         if (track.activeAction != null) {
-                                            // A swipe was activated — release it
+                                            // Action was active (swipe or 50ms hold) — release it
                                             val durationMs = System.currentTimeMillis() - track.startTimeMs
                                             if (durationMs < 50) {
                                                 val actionToRelease = track.activeAction
@@ -253,7 +292,7 @@ fun GPEmulationScreen(
                                                 track.activeAction?.release()
                                             }
                                         } else {
-                                            // No swipe detected — fire TAP as quick pulse
+                                            // Released before 50ms without swiping — fire quick tap pulse (60ms)
                                             val tapMapping = activeMode.mappings.find {
                                                 it.controlId == track.controlId && it.gesture == GestureType.TAP
                                             }
@@ -266,7 +305,7 @@ fun GPEmulationScreen(
                                                 tapAction, activeMode, viewModel.transport
                                             )
                                             scope.launch(Dispatchers.Default) {
-                                                delay(80)
+                                                delay(60)
                                                 active.release()
                                             }
                                         }
