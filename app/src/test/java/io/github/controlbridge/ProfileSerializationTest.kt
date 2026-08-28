@@ -18,20 +18,38 @@ class ProfileSerializationTest {
     fun testDefaultEFootballProfile() {
         val profile = ProfileStorage.createDefaultEFootball()
         assertEquals("eFootball", profile.name)
-        assertTrue(profile.modes.isNotEmpty())
+        assertEquals(2, profile.modes.size)
 
-        val defaultMode = profile.modes.first()
-        assertEquals("Default", defaultMode.name)
-        assertTrue(defaultMode.isDefault)
+        val matchMode = profile.modes.find { it.name == "Match" }
+        assertNotNull(matchMode)
+        assertTrue(matchMode!!.isDefault)
 
-        // Verify tap mappings exist for buttons
-        val buttonMappings = defaultMode.mappings.filter { it.gesture == GestureType.TAP }
-        assertTrue(buttonMappings.isNotEmpty())
+        val menuMode = profile.modes.find { it.name == "Menu" }
+        assertNotNull(menuMode)
+        assertFalse(menuMode!!.isDefault)
 
-        val btnA = buttonMappings.find { it.controlId == "btn_a" }
-        assertNotNull(btnA)
-        assertTrue(btnA!!.action is MappingAction.ButtonPress)
-        assertEquals(GamepadKey.A, (btnA.action as MappingAction.ButtonPress).key)
+        // Verify swipe mappings exist in Match mode
+        val stunningShotMapping = matchMode.mappings.find {
+            it.controlId == "btn_x" && it.gesture == GestureType.SWIPE_RIGHT
+        }
+        assertNotNull(stunningShotMapping)
+        assertTrue(stunningShotMapping!!.action is MappingAction.MultiButton)
+        val multiAction = stunningShotMapping.action as MappingAction.MultiButton
+        assertTrue(GamepadKey.X in multiAction.keys && GamepadKey.RT in multiAction.keys)
+
+        // Verify Menu mode has only pure TAP mappings
+        assertTrue(menuMode.mappings.all { it.gesture == GestureType.TAP })
+    }
+
+    @Test
+    fun testCreateFromTemplate() {
+        val defaultProfile = ProfileStorage.createFromTemplate(GameTemplate.DEFAULT, "MyXbox")
+        assertEquals("MyXbox", defaultProfile.name)
+        assertEquals(1, defaultProfile.modes.size)
+
+        val efootballProfile = ProfileStorage.createFromTemplate(GameTemplate.EFOOTBALL, "MyEfootball")
+        assertEquals("MyEfootball", efootballProfile.name)
+        assertEquals(2, efootballProfile.modes.size)
     }
 
     @Test

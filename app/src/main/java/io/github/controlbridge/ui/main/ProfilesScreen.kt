@@ -3,12 +3,15 @@ package io.github.controlbridge.ui.main
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -18,13 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.controlbridge.R
-import io.github.controlbridge.dialogs.AlertDialogQueue
-import io.github.controlbridge.dialogs.AppDialog
+import io.github.controlbridge.models.GameTemplate
 import io.github.controlbridge.models.Profile
 import io.github.controlbridge.profile.ProfileStorage
 import io.github.controlbridge.viewmodel.GPEmulationViewModel
@@ -48,6 +51,7 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
         }
     }
     val lifecycleOwner = LocalLifecycleOwner.current
+    var showCreateDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -87,21 +91,7 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    AlertDialogQueue.show(
-                        AppDialog.Input(
-                            title = "Create Profile",
-                            placeholder = "Profile Name",
-                            isValid = { name -> name.isNotBlank() && profiles.none { it.name == name.trim() } },
-                            confirmText = "Create",
-                            onConfirm = { name ->
-                                val newProfile = ProfileStorage.createDefaultProfile(name.trim())
-                                profiles.add(newProfile)
-                                ProfileStorage.save(context, profiles.toList())
-                            }
-                        )
-                    )
-                }
+                onClick = { showCreateDialog = true }
             ) {
                 Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "Create Profile")
             }
@@ -141,6 +131,149 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
             }
         }
     }
+
+    if (showCreateDialog) {
+        CreateProfileDialog(
+            existingNames = profiles.map { it.name }.toSet(),
+            onDismiss = { showCreateDialog = false },
+            onCreate = { template, name ->
+                val newProfile = ProfileStorage.createFromTemplate(template, name)
+                profiles.add(newProfile)
+                ProfileStorage.save(context, profiles.toList())
+                showCreateDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun CreateProfileDialog(
+    existingNames: Set<String>,
+    onDismiss: () -> Unit,
+    onCreate: (GameTemplate, String) -> Unit
+) {
+    var selectedTemplate by remember { mutableStateOf(GameTemplate.DEFAULT) }
+    var profileName by remember {
+        mutableStateOf(generateUniqueName(selectedTemplate.displayName, existingNames))
+    }
+    var isNameError by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("New Controller Profile", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    "Select Game Preset / Template",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                GameTemplate.entries.forEach { template ->
+                    val isSelected = selectedTemplate == template
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedTemplate = template
+                                profileName = generateUniqueName(template.displayName, existingNames)
+                                isNameError = false
+                            },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = {
+                                    selectedTemplate = template
+                                    profileName = generateUniqueName(template.displayName, existingNames)
+                                    isNameError = false
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    template.displayName,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    template.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                OutlinedTextField(
+                    value = profileName,
+                    onValueChange = {
+                        profileName = it
+                        isNameError = it.isBlank() || it.trim() in existingNames
+                    },
+                    label = { Text("Profile Name") },
+                    singleLine = true,
+                    isError = isNameError,
+                    supportingText = {
+                        if (isNameError) {
+                            Text(
+                                if (profileName.isBlank()) "Name cannot be empty" else "Name already exists",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val trimmed = profileName.trim()
+                    if (trimmed.isNotBlank() && trimmed !in existingNames) {
+                        onCreate(selectedTemplate, trimmed)
+                    } else {
+                        isNameError = true
+                    }
+                },
+                enabled = profileName.trim().isNotBlank() && profileName.trim() !in existingNames
+            ) {
+                Text("Create")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+private fun generateUniqueName(base: String, existing: Set<String>): String {
+    if (base !in existing) return base
+    var count = 2
+    while ("$base ($count)" in existing) {
+        count++
+    }
+    return "$base ($count)"
 }
 
 @OptIn(ExperimentalFoundationApi::class)
