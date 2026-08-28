@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PadConnect</string>
+    <string name="app_name">ControlBridge</string>
     <string name="slider_value_supporting">Value must be a multiple of step size %1$d within %2$.0f to %3$.0f</string>
     <string name="value">Value</string>
     <string name="settings">Settings</string>

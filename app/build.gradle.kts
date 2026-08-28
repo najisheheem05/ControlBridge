@@ -5,17 +5,17 @@ plugins {
 }
 
 android {
-    namespace = "io.github.padconnect"
+    namespace = "io.github.controlbridge"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "io.github.padconnect"
+        applicationId = "io.github.controlbridge"
         minSdk = 29
         targetSdk = 37
-        versionCode = 9
-        versionName = "0.7.0"
+        versionCode = 10
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
