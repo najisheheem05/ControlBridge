@@ -9,5 +9,6 @@ data class Mode(
     val name: String,
     val isDefault: Boolean = false,
     val mappings: List<Mapping> = emptyList(),
-    val macros: List<Macro> = emptyList()
+    val macros: List<Macro> = emptyList(),
+    val guideText: String? = null
 )

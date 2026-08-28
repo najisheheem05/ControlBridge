@@ -63,10 +63,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -353,6 +355,16 @@ fun GPEmulationScreen(
                 viewModel,
                 modifier = Modifier.align(Alignment.TopStart)
             )
+
+            // Mode guide / legend overlay
+            if (!isEditMode && !activeMode.guideText.isNullOrBlank()) {
+                ModeGuideOverlay(
+                    guideText = activeMode.guideText,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = 28.dp, start = 16.dp)
+                )
+            }
 
             // Mode indicator — tap to open mode switch panel
             if (!isEditMode && currentProfile.modes.size > 1) {
@@ -1048,3 +1060,59 @@ private fun labelStyle() = MaterialTheme.typography.titleLarge.copy(
 
 @Composable
 private fun smallLabelStyle() = MaterialTheme.typography.labelMedium
+
+@Composable
+fun ModeGuideOverlay(
+    guideText: String,
+    modifier: Modifier = Modifier
+) {
+    var isVisible by remember { mutableStateOf(true) }
+
+    if (isVisible) {
+        Box(
+            modifier = modifier
+                .background(
+                    Color.Black.copy(alpha = 0.45f),
+                    RoundedCornerShape(8.dp)
+                )
+                .border(
+                    1.dp,
+                    Color.White.copy(alpha = 0.12f),
+                    RoundedCornerShape(8.dp)
+                )
+                .clickable { isVisible = false }
+                .padding(horizontal = 10.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = guideText,
+                color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp
+                )
+            )
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .background(
+                    Color.Black.copy(alpha = 0.35f),
+                    RoundedCornerShape(6.dp)
+                )
+                .border(
+                    1.dp,
+                    Color.White.copy(alpha = 0.10f),
+                    RoundedCornerShape(6.dp)
+                )
+                .clickable { isVisible = true }
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "Guide ▾",
+                color = Color.White.copy(alpha = 0.5f),
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+    }
+}
