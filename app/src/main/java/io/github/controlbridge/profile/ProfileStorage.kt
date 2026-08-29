@@ -77,10 +77,10 @@ object ProfileStorage {
             name = name,
             elements = listOf(
                 // Face buttons (A / B / X / Y)
-                ButtonElement(id = "btn_a", x = 0.91f, y = 0.80f, size = 0.135f, opacity = 0.85f, key = GamepadKey.A),
-                ButtonElement(id = "btn_b", x = 0.77f, y = 0.82f, size = 0.12f, opacity = 0.85f, key = GamepadKey.B),
-                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
-                ButtonElement(id = "btn_y", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
+                ButtonElement(id = "btn_a", x = 0.77f, y = 0.82f, size = 0.12f, opacity = 0.85f, key = GamepadKey.A),
+                ButtonElement(id = "btn_b", x = 0.91f, y = 0.80f, size = 0.135f, opacity = 0.85f, key = GamepadKey.B),
+                ButtonElement(id = "btn_x", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
+                ButtonElement(id = "btn_y", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
                 // Analog stick
                 AnalogStickElement(id = "dpad", x = 0.15f, y = 0.75f, size = 0.15f, opacity = 0.8f),
                 // Triggers & Bumpers
@@ -107,14 +107,15 @@ object ProfileStorage {
 
         // Match Mode Mappings (eFootball Gesture Controls)
         val matchMappings = mutableListOf(
+                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
             // Dash / Press (btn_a)
-            map("btn_a", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
+            map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
 
             // Pass / Switch (btn_b)
-            map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.B)),
-            map("btn_b", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.B))),
-            map("btn_b", GestureType.SWIPE_RIGHT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.A))),
-            map("btn_b", GestureType.SWIPE_UP, MappingAction.ButtonPress(GamepadKey.A)),
+            map("btn_a", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.A)),
+            map("btn_a", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.A))),
+            map("btn_a", GestureType.SWIPE_RIGHT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.B))),
+            map("btn_a", GestureType.SWIPE_UP, MappingAction.ButtonPress(GamepadKey.B)),
 
             // Shoot / Tackle (btn_x)
             map("btn_x", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.X)),
