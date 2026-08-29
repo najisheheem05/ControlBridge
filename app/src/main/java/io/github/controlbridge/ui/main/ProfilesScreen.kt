@@ -335,7 +335,7 @@ private fun ProfileCard(
                 )
                 HorizontalDivider()
                 DropdownMenuItem(
-                    leadingIcon = { Icon(painter = painterResource(com.github.ishan09811.compose_preferences.R.drawable.ic_delete), contentDescription = "Delete") },
+                    leadingIcon = { Icon(painter = painterResource(io.github.compose_preferences.R.drawable.ic_delete), contentDescription = "Delete") },
                     text = { Text("Delete") },
                     onClick = {
                         menuExpanded = false

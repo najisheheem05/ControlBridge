@@ -155,7 +155,7 @@ fun MacroCard(
                 Icon(painterResource(R.drawable.ic_edit), "Edit")
             }
             IconButton(onClick = onDelete) {
-                Icon(painterResource(com.github.ishan09811.compose_preferences.R.drawable.ic_delete), "Delete")
+                Icon(painterResource(io.github.compose_preferences.R.drawable.ic_delete), "Delete")
             }
         }
     }

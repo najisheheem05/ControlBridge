@@ -107,7 +107,6 @@ object ProfileStorage {
 
         // Match Mode Mappings (eFootball Gesture Controls)
         val matchMappings = mutableListOf(
-                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
             // Dash / Press (btn_a)
             map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
 
