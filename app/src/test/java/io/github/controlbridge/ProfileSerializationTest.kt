@@ -18,18 +18,22 @@ class ProfileSerializationTest {
     fun testDefaultEFootballProfile() {
         val profile = ProfileStorage.createDefaultEFootball()
         assertEquals("eFootball", profile.name)
-        assertEquals(2, profile.modes.size)
+        assertEquals(3, profile.modes.size)
 
-        val matchMode = profile.modes.find { it.name == "Match" }
-        assertNotNull(matchMode)
-        assertTrue(matchMode!!.isDefault)
+        val standardMode = profile.modes.find { it.name == "Standard style" }
+        assertNotNull(standardMode)
+        assertTrue(standardMode!!.isDefault)
+
+        val pressureMode = profile.modes.find { it.name == "Pressure style" }
+        assertNotNull(pressureMode)
+        assertFalse(pressureMode!!.isDefault)
 
         val menuMode = profile.modes.find { it.name == "Menu" }
         assertNotNull(menuMode)
         assertFalse(menuMode!!.isDefault)
 
-        // Verify swipe mappings exist in Match mode
-        val stunningShotMapping = matchMode.mappings.find {
+        // Verify swipe mappings exist in Standard style mode
+        val stunningShotMapping = standardMode.mappings.find {
             it.controlId == "btn_x" && it.gesture == GestureType.SWIPE_RIGHT
         }
         assertNotNull(stunningShotMapping)
@@ -49,7 +53,7 @@ class ProfileSerializationTest {
 
         val efootballProfile = ProfileStorage.createFromTemplate(GameTemplate.EFOOTBALL, "MyEfootball")
         assertEquals("MyEfootball", efootballProfile.name)
-        assertEquals(2, efootballProfile.modes.size)
+        assertEquals(3, efootballProfile.modes.size)
     }
 
     @Test

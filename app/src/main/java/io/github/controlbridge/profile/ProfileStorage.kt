@@ -79,8 +79,8 @@ object ProfileStorage {
                 // Face buttons (A / B / X / Y)
                 ButtonElement(id = "btn_a", x = 0.77f, y = 0.82f, size = 0.12f, opacity = 0.85f, key = GamepadKey.A),
                 ButtonElement(id = "btn_b", x = 0.91f, y = 0.80f, size = 0.135f, opacity = 0.85f, key = GamepadKey.B),
-                ButtonElement(id = "btn_x", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
-                ButtonElement(id = "btn_y", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
+                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
+                ButtonElement(id = "btn_y", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
                 // Analog stick
                 AnalogStickElement(id = "dpad", x = 0.15f, y = 0.75f, size = 0.15f, opacity = 0.8f),
                 // Triggers & Bumpers
@@ -106,8 +106,7 @@ object ProfileStorage {
         val layout = createEFootballLayout(name)
 
         // Match Mode Mappings (eFootball Gesture Controls)
-        val matchMappings = mutableListOf(
-                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
+        val standardMappings = mutableListOf(
             // Dash / Press (btn_a)
             map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
 
@@ -139,22 +138,68 @@ object ProfileStorage {
             map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3))
         )
 
+        val pressureMappings = mutableListOf(
+            // Dash (btn_a)
+            map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
+
+            // Pass / Switch (btn_b)
+            map("btn_a", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.A)),
+            map("btn_a", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.A))),
+            map("btn_a", GestureType.SWIPE_RIGHT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.B))),
+            map("btn_a", GestureType.SWIPE_UP, MappingAction.ButtonPress(GamepadKey.B)),
+
+            // Shoot / Tackle (btn_x)
+            map("btn_x", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.X)),
+            map("btn_x", GestureType.SWIPE_RIGHT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.X))),
+            map("btn_x", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.X))),
+            map("btn_x", GestureType.SWIPE_DOWN, MappingAction.MultiButton(listOf(GamepadKey.RB, GamepadKey.X))),
+            map("btn_x", GestureType.SWIPE_UP, MappingAction.MultiButton(listOf(GamepadKey.LB, GamepadKey.X))),
+            
+            // Through Pass / press / Match-up  (btn_y)
+            map("btn_y", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.Y)),
+            map("btn_y", GestureType.SWIPE_UP, MappingAction.MultiButton(listOf(GamepadKey.LB, GamepadKey.Y))),
+            map("btn_y", GestureType.SWIPE_RIGHT, MappingAction.ButtonPress(GamepadKey.LB)),
+
+            // lhs == rhs
+            map("btn_rt", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
+            map("btn_rb", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RB)),
+            map("btn_lb", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.LB)),
+            map("btn_lt", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.LT)),
+            map("btn_select", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.SELECT)),
+            map("btn_start", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.START)),
+            map("btn_l3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.L3)),
+            map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3))
+        )
+
         val defaultMappings = layout.elements
             .filterIsInstance<ButtonElement>()
             .map { btn ->
                 map(btn.id, GestureType.TAP, MappingAction.ButtonPress(btn.key))
             }
 
-        val matchMode = Mode(
-            name = "Match",
+        val standardMode = Mode(
+            name = "Standard style",
             isDefault = true,
-            mappings = matchMappings,
+            mappings = standardMappings,
             // Key guide / Legend displayed on controller UI during match
             guideText = """
                 A  pass/switch
                 B  dash/press
                 X  shoot/tackle
                 Y  through/match-up
+            """.trimIndent()
+        )
+        
+        val pressureMode = Mode(
+            name = "Pressure style",
+            isDefault = false,
+            mappings = pressureMappings,
+            // Key guide / Legend displayed on controller UI during match
+            guideText = """
+                A  pass/switch
+                B  dash
+                X  shoot/tackle
+                Y  through/press ->match-up
             """.trimIndent()
         )
 
@@ -168,8 +213,8 @@ object ProfileStorage {
 
         return Profile(
             name = name,
-            modes = listOf(matchMode, menuMode),
-            activeModeId = matchMode.id,
+            modes = listOf(menuMode, standardMode, pressureMode),
+            activeModeId = standardMode.id,
             layout = layout
         )
     }
