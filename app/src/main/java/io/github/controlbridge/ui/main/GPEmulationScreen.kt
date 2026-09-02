@@ -1023,10 +1023,10 @@ fun GamepadButtonLabel(keyName: String) {
         "X" -> Text("X", style = labelStyle(), color = Color.White)
         "Y" -> Text("Y", style = labelStyle(), color = Color.White)
 
-        "DPAD_UP" -> Text("▲", style = smallLabelStyle(), color = Color.White)
-        "DPAD_DOWN" -> Text("▼", style = smallLabelStyle(), color = Color.White)
-        "DPAD_LEFT" -> Text("◀", style = smallLabelStyle(), color = Color.White)
-        "DPAD_RIGHT" -> Text("▶", style = smallLabelStyle(), color = Color.White)
+        "DPAD_UP" -> Text("🢕", style = smallLabelStyle(), color = Color.White)
+        "DPAD_DOWN" -> Text("🢗", style = smallLabelStyle(), color = Color.White)
+        "DPAD_LEFT" -> Text("🢔", style = smallLabelStyle(), color = Color.White)
+        "DPAD_RIGHT" -> Text("🢖", style = smallLabelStyle(), color = Color.White)
 
         "LB" -> Text("LB", style = smallLabelStyle(), color = Color.White)
         "RB" -> Text("RB", style = smallLabelStyle(), color = Color.White)
