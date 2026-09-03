@@ -49,3 +49,28 @@ data class AnalogStickElement(
     override val opacity: Float,
     override val enabled: Boolean = true
 ) : ControllerElement()
+
+@Immutable
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+@SerialName("dpad_cluster")
+data class DpadElement(
+    override val id: String = "dpad_buttons",
+    override val x: Float,
+    override val y: Float,
+    override val size: Float,
+    override val opacity: Float,
+    override val enabled: Boolean = true
+) : ControllerElement() {
+    fun subButtons(): List<ButtonElement> {
+        val dx = size * 0.32f
+        val dy = size * 0.32f
+        val subSize = size * 0.38f
+        return listOf(
+            ButtonElement(id = "${id}_up", x = x, y = y - dy, size = subSize, opacity = opacity, enabled = enabled, key = GamepadKey.DPAD_UP),
+            ButtonElement(id = "${id}_down", x = x, y = y + dy, size = subSize, opacity = opacity, enabled = enabled, key = GamepadKey.DPAD_DOWN),
+            ButtonElement(id = "${id}_left", x = x - dx, y = y, size = subSize, opacity = opacity, enabled = enabled, key = GamepadKey.DPAD_LEFT),
+            ButtonElement(id = "${id}_right", x = x + dx, y = y, size = subSize, opacity = opacity, enabled = enabled, key = GamepadKey.DPAD_RIGHT)
+        )
+    }
+}

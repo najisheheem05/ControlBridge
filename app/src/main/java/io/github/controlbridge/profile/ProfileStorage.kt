@@ -5,6 +5,7 @@ import io.github.controlbridge.models.AnalogStickElement
 import io.github.controlbridge.models.ButtonElement
 import io.github.controlbridge.models.ControllerElement
 import io.github.controlbridge.models.ControllerLayout
+import io.github.controlbridge.models.DpadElement
 import io.github.controlbridge.models.GamepadKey
 import io.github.controlbridge.models.GameTemplate
 import io.github.controlbridge.models.GestureType
@@ -57,11 +58,8 @@ object ProfileStorage {
                 ButtonElement(id = "btn_x", x = 0.72f, y = 0.675f, size = 0.11f, opacity = 0.85f, key = GamepadKey.X),
                 ButtonElement(id = "btn_y", x = 0.81f, y = 0.50f, size = 0.11f, opacity = 0.85f, key = GamepadKey.Y),
                 AnalogStickElement(id = "dpad", x = 0.12f, y = 0.72f, size = 0.15f, opacity = 0.8f),
-                // D-Pad buttons (minimal directional controls alongside analog stick)
-                ButtonElement(id = "btn_dpad_up", x = 0.30f, y = 0.60f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_UP),
-                ButtonElement(id = "btn_dpad_down", x = 0.30f, y = 0.84f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_DOWN),
-                ButtonElement(id = "btn_dpad_left", x = 0.24f, y = 0.72f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_LEFT),
-                ButtonElement(id = "btn_dpad_right", x = 0.36f, y = 0.72f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_RIGHT),
+                // D-Pad single unified element (4 directional buttons in one cluster)
+                DpadElement(id = "dpad_buttons", x = 0.28f, y = 0.72f, size = 0.18f, opacity = 0.8f),
                 ButtonElement(id = "btn_lt", x = 0.10f, y = 0.15f, size = 0.13f, opacity = 0.7f, key = GamepadKey.LT),
                 ButtonElement(id = "btn_rt", x = 0.90f, y = 0.15f, size = 0.13f, opacity = 0.7f, key = GamepadKey.RT),
                 ButtonElement(id = "btn_lb", x = 0.25f, y = 0.18f, size = 0.13f, opacity = 0.7f, key = GamepadKey.LB),
@@ -88,11 +86,8 @@ object ProfileStorage {
                 ButtonElement(id = "btn_y", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
                 // Analog stick
                 AnalogStickElement(id = "dpad", x = 0.12f, y = 0.72f, size = 0.15f, opacity = 0.8f),
-                // D-Pad buttons (minimal directional controls alongside analog stick)
-                ButtonElement(id = "btn_dpad_up", x = 0.30f, y = 0.60f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_UP),
-                ButtonElement(id = "btn_dpad_down", x = 0.30f, y = 0.84f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_DOWN),
-                ButtonElement(id = "btn_dpad_left", x = 0.24f, y = 0.72f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_LEFT),
-                ButtonElement(id = "btn_dpad_right", x = 0.36f, y = 0.72f, size = 0.08f, opacity = 0.7f, key = GamepadKey.DPAD_RIGHT),
+                // D-Pad single unified element (4 directional buttons in one cluster)
+                DpadElement(id = "dpad_buttons", x = 0.28f, y = 0.72f, size = 0.18f, opacity = 0.8f),
                 // Triggers & Bumpers
                 ButtonElement(id = "btn_lt", x = 0.10f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.LT),
                 ButtonElement(id = "btn_rt", x = 0.90f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.RT),
@@ -106,6 +101,16 @@ object ProfileStorage {
                 ButtonElement(id = "btn_start", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.START)
             )
         )
+    }
+
+    fun allButtons(layout: ControllerLayout): List<ButtonElement> {
+        return layout.elements.flatMap { el ->
+            when (el) {
+                is ButtonElement -> listOf(el)
+                is DpadElement -> el.subButtons()
+                is AnalogStickElement -> emptyList()
+            }
+        }
     }
 
     private fun map(controlId: String, gesture: GestureType, action: MappingAction): Mapping {
@@ -146,10 +151,10 @@ object ProfileStorage {
             map("btn_start", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.START)),
             map("btn_l3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.L3)),
             map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3)),
-            map("btn_dpad_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
-            map("btn_dpad_down", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_DOWN)),
-            map("btn_dpad_left", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_LEFT)),
-            map("btn_dpad_right", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_RIGHT))
+            map("dpad_buttons_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
+            map("dpad_buttons_down", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_DOWN)),
+            map("dpad_buttons_left", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_LEFT)),
+            map("dpad_buttons_right", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_RIGHT))
         )
 
         val pressureMappings = mutableListOf(
@@ -183,14 +188,13 @@ object ProfileStorage {
             map("btn_start", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.START)),
             map("btn_l3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.L3)),
             map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3)),
-            map("btn_dpad_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
-            map("btn_dpad_down", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_DOWN)),
-            map("btn_dpad_left", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_LEFT)),
-            map("btn_dpad_right", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_RIGHT))
+            map("dpad_buttons_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
+            map("dpad_buttons_down", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_DOWN)),
+            map("dpad_buttons_left", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_LEFT)),
+            map("dpad_buttons_right", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_RIGHT))
         )
 
-        val defaultMappings = layout.elements
-            .filterIsInstance<ButtonElement>()
+        val defaultMappings = allButtons(layout)
             .map { btn ->
                 map(btn.id, GestureType.TAP, MappingAction.ButtonPress(btn.key))
             }
@@ -239,8 +243,7 @@ object ProfileStorage {
 
     fun createDefaultProfile(name: String): Profile {
         val layout = createDefaultLayout(name)
-        val defaultMappings = layout.elements
-            .filterIsInstance<ButtonElement>()
+        val defaultMappings = allButtons(layout)
             .map { btn ->
                 map(btn.id, GestureType.TAP, MappingAction.ButtonPress(btn.key))
             }

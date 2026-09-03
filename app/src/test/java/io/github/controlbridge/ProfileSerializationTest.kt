@@ -127,19 +127,18 @@ class ProfileSerializationTest {
     @Test
     fun testDpadButtonsSerialization() {
         val profile = ProfileStorage.createDefaultProfile("DpadTest")
-        val dpadUp = profile.layout.elements.find { it.id == "btn_dpad_up" } as? ButtonElement
-        assertNotNull(dpadUp)
-        assertEquals(GamepadKey.DPAD_UP, dpadUp!!.key)
+        val dpad = profile.layout.elements.find { it is DpadElement } as? DpadElement
+        assertNotNull(dpad)
 
         val encoded = json.encodeToString(profile)
         val decoded = json.decodeFromString<Profile>(encoded)
 
-        val decodedDpadUp = decoded.layout.elements.find { it.id == "btn_dpad_up" } as? ButtonElement
-        assertNotNull(decodedDpadUp)
-        assertEquals(GamepadKey.DPAD_UP, decodedDpadUp!!.key)
+        val decodedDpad = decoded.layout.elements.find { it is DpadElement } as? DpadElement
+        assertNotNull(decodedDpad)
+        assertEquals(dpad!!.size, decodedDpad!!.size, 0.001f)
 
         val defaultMode = decoded.modes.first()
-        val dpadUpMapping = defaultMode.mappings.find { it.controlId == "btn_dpad_up" }
+        val dpadUpMapping = defaultMode.mappings.find { it.controlId == "${dpad.id}_up" }
         assertNotNull(dpadUpMapping)
         assertEquals(MappingAction.ButtonPress(GamepadKey.DPAD_UP), dpadUpMapping!!.action)
     }

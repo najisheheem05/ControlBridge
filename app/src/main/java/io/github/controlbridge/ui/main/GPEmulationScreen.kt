@@ -85,6 +85,8 @@ import io.github.controlbridge.input.GestureRecognizer
 import io.github.controlbridge.models.AnalogStickElement
 import io.github.controlbridge.models.ButtonElement
 import io.github.controlbridge.models.ControllerElement
+import io.github.controlbridge.models.DpadElement
+import io.github.controlbridge.models.GamepadKey
 import io.github.controlbridge.models.GestureType
 import io.github.controlbridge.models.MappingAction
 import io.github.controlbridge.models.Mode
@@ -415,6 +417,20 @@ fun GPEmulationScreen(
                             currentProfile = currentProfile.updateElement(updated.id) { updated }
                         }
                     )
+
+                    is DpadElement -> DpadButtons(
+                        dpad = element,
+                        screenWidth = maxWidth,
+                        screenHeight = maxHeight,
+                        buttonBounds = buttonBounds,
+                        pressedControlIds = pointerTracks.values.map { it.controlId }.toSet(),
+                        isEditMode = isEditMode,
+                        isSelected = selectedElementId == element.id,
+                        onSelect = { selectedElementId = element.id },
+                        onUpdate = { updated ->
+                            currentProfile = currentProfile.updateElement(updated.id) { updated }
+                        }
+                    )
                 }
             }
 
@@ -435,6 +451,11 @@ fun GPEmulationScreen(
                                     enabled = enabled ?: el.enabled
                                 )
                                 is AnalogStickElement -> el.copy(
+                                    size = size ?: el.size,
+                                    opacity = opacity ?: el.opacity,
+                                    enabled = enabled ?: el.enabled
+                                )
+                                is DpadElement -> el.copy(
                                     size = size ?: el.size,
                                     opacity = opacity ?: el.opacity,
                                     enabled = enabled ?: el.enabled
@@ -788,6 +809,157 @@ private fun AnalogStickVisual(knobOffset: Offset) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun DpadButtons(
+    dpad: DpadElement,
+    screenWidth: Dp,
+    screenHeight: Dp,
+    buttonBounds: MutableMap<ButtonElement, Rect>,
+    pressedControlIds: Set<String>,
+    isEditMode: Boolean = false,
+    isSelected: Boolean = false,
+    onSelect: () -> Unit = {},
+    onUpdate: (DpadElement) -> Unit = {}
+) {
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { screenWidth.toPx() }
+    val screenHeightPx = with(density) { screenHeight.toPx() }
+
+    val latestDpad by rememberUpdatedState(dpad)
+
+    var localX by remember(dpad.id) { mutableFloatStateOf(dpad.x) }
+    var localY by remember(dpad.id) { mutableFloatStateOf(dpad.y) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    LaunchedEffect(dpad.x, dpad.y) {
+        if (!isDragging) {
+            localX = dpad.x
+            localY = dpad.y
+        }
+    }
+
+    val sizeDp = screenWidth * dpad.size
+    val sizePx = screenWidthPx * dpad.size
+
+    val aspectRatio = if (screenHeightPx > 0) screenWidthPx / screenHeightPx else 1f
+    val dx = dpad.size * 0.32f
+    val dy = dx * aspectRatio
+    val subSize = dpad.size * 0.38f
+
+    val subButtons = remember(localX, localY, dpad.size, dpad.opacity, dpad.enabled, aspectRatio) {
+        listOf(
+            ButtonElement(id = "${dpad.id}_up", x = localX, y = localY - dy, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_UP),
+            ButtonElement(id = "${dpad.id}_down", x = localX, y = localY + dy, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_DOWN),
+            ButtonElement(id = "${dpad.id}_left", x = localX - dx, y = localY, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_LEFT),
+            ButtonElement(id = "${dpad.id}_right", x = localX + dx, y = localY, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_RIGHT)
+        )
+    }
+
+    subButtons.forEach { btn ->
+        val subSizePx = screenWidthPx * btn.size
+        val subXPx = screenWidthPx * btn.x - subSizePx / 2f
+        val subYPx = screenHeightPx * btn.y - subSizePx / 2f
+        buttonBounds[btn] = Rect(
+            subXPx,
+            subYPx,
+            subXPx + subSizePx,
+            subYPx + subSizePx
+        )
+    }
+
+    val subSizeDp = screenWidth * subSize
+
+    Box(
+        modifier = Modifier
+            .offset(
+                x = screenWidth * localX - sizeDp / 2,
+                y = screenHeight * localY - sizeDp / 2
+            )
+            .size(sizeDp)
+            .graphicsLayer { alpha = dpad.opacity }
+            .background(Color.Transparent)
+            .border(
+                width = when {
+                    isSelected -> 2.dp
+                    !dpad.enabled -> 1.dp
+                    else -> 0.dp
+                },
+                color = when {
+                    isSelected -> Color.Cyan
+                    !dpad.enabled -> Color.White.copy(alpha = 0.25f)
+                    else -> Color.Transparent
+                },
+                shape = CircleShape
+            )
+            .visible(if (!isEditMode) dpad.enabled else true)
+            .pointerInput(isEditMode) {
+                if (!isEditMode) return@pointerInput
+                detectTapGestures(onTap = { onSelect() })
+            }
+            .pointerInput(isEditMode, dpad.enabled) {
+                if (!isEditMode || !dpad.enabled) return@pointerInput
+                detectDragGestures(
+                    onDragStart = {
+                        isDragging = true
+                        onSelect()
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        localX = (localX + dragAmount.x / screenWidthPx).coerceIn(0f, 1f)
+                        localY = (localY + dragAmount.y / screenHeightPx).coerceIn(0f, 1f)
+                    },
+                    onDragEnd = {
+                        isDragging = false
+                        onUpdate(latestDpad.copy(x = localX, y = localY))
+                    },
+                    onDragCancel = {
+                        isDragging = false
+                    }
+                )
+            }
+    ) {
+        val arrowFontSize = with(density) { (sizePx * 0.20f).toSp() }
+
+        subButtons.forEach { btn ->
+            val isPressed = btn.id in pressedControlIds
+            val arrowText = when (btn.key) {
+                GamepadKey.DPAD_UP -> "▲"
+                GamepadKey.DPAD_DOWN -> "▼"
+                GamepadKey.DPAD_LEFT -> "◀"
+                GamepadKey.DPAD_RIGHT -> "▶"
+                else -> ""
+            }
+
+            val relOffsetX = when (btn.key) {
+                GamepadKey.DPAD_LEFT -> sizeDp * 0.18f - subSizeDp / 2
+                GamepadKey.DPAD_RIGHT -> sizeDp * 0.82f - subSizeDp / 2
+                else -> sizeDp / 2 - subSizeDp / 2
+            }
+            val relOffsetY = when (btn.key) {
+                GamepadKey.DPAD_UP -> sizeDp * 0.18f - subSizeDp / 2
+                GamepadKey.DPAD_DOWN -> sizeDp * 0.82f - subSizeDp / 2
+                else -> sizeDp / 2 - subSizeDp / 2
+            }
+
+            Box(
+                modifier = Modifier
+                    .offset(x = relOffsetX, y = relOffsetY)
+                    .size(subSizeDp)
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = arrowText,
+                    fontSize = arrowFontSize,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isPressed) Color.Cyan else Color.White
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPanel(
@@ -911,6 +1083,7 @@ fun EditPanel(
                                 when (it) {
                                     is ButtonElement -> onUpdate(it.copy(size = value))
                                     is AnalogStickElement -> onUpdate(it.copy(size = value))
+                                    is DpadElement -> onUpdate(it.copy(size = value))
                                 }
                             }
                         }
@@ -945,6 +1118,7 @@ fun EditPanel(
                                 when (it) {
                                     is ButtonElement -> onUpdate(it.copy(opacity = value))
                                     is AnalogStickElement -> onUpdate(it.copy(opacity = value))
+                                    is DpadElement -> onUpdate(it.copy(opacity = value))
                                 }
                             }
                         }
@@ -984,6 +1158,7 @@ fun EditPanel(
                                     when (it) {
                                         is ButtonElement -> onUpdate(it.copy(enabled = enabled))
                                         is AnalogStickElement -> onUpdate(it.copy(enabled = enabled))
+                                        is DpadElement -> onUpdate(it.copy(enabled = enabled))
                                     }
                                 }
                             }

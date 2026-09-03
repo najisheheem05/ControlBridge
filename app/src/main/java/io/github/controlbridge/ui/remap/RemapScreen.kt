@@ -32,7 +32,13 @@ fun RemapScreen(
         profile.modes.find { it.id == selectedModeId } ?: profile.modes.first()
     }
     val buttons = remember(profile) {
-        profile.layout.elements.filterIsInstance<ButtonElement>()
+        profile.layout.elements.flatMap { el ->
+            when (el) {
+                is ButtonElement -> listOf(el)
+                is DpadElement -> el.subButtons()
+                is AnalogStickElement -> emptyList()
+            }
+        }
     }
 
     var editingControl by remember { mutableStateOf<String?>(null) }
