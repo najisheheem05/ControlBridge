@@ -57,9 +57,9 @@ object ProfileStorage {
                 ButtonElement(id = "btn_b", x = 0.90f, y = 0.675f, size = 0.11f, opacity = 0.85f, key = GamepadKey.B),
                 ButtonElement(id = "btn_x", x = 0.72f, y = 0.675f, size = 0.11f, opacity = 0.85f, key = GamepadKey.X),
                 ButtonElement(id = "btn_y", x = 0.81f, y = 0.50f, size = 0.11f, opacity = 0.85f, key = GamepadKey.Y),
-                AnalogStickElement(id = "dpad", x = 0.12f, y = 0.72f, size = 0.15f, opacity = 0.8f),
+                AnalogStickElement(id = "dpad", x = 0.13f, y = 0.72f, size = 0.15f, opacity = 0.8f),
                 // D-Pad single unified element (4 directional buttons in one cluster)
-                DpadElement(id = "dpad_buttons", x = 0.28f, y = 0.72f, size = 0.18f, opacity = 0.8f),
+                DpadElement(id = "dpad_buttons", x = 0.32f, y = 0.72f, size = 0.18f, opacity = 0.4f),
                 ButtonElement(id = "btn_lt", x = 0.10f, y = 0.15f, size = 0.13f, opacity = 0.7f, key = GamepadKey.LT),
                 ButtonElement(id = "btn_rt", x = 0.90f, y = 0.15f, size = 0.13f, opacity = 0.7f, key = GamepadKey.RT),
                 ButtonElement(id = "btn_lb", x = 0.25f, y = 0.18f, size = 0.13f, opacity = 0.7f, key = GamepadKey.LB),
@@ -85,9 +85,9 @@ object ProfileStorage {
                 ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
                 ButtonElement(id = "btn_y", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
                 // Analog stick
-                AnalogStickElement(id = "dpad", x = 0.12f, y = 0.72f, size = 0.15f, opacity = 0.8f),
+                AnalogStickElement(id = "dpad", x = 0.15f, y = 0.72f, size = 0.15f, opacity = 0.8f),
                 // D-Pad single unified element (4 directional buttons in one cluster)
-                DpadElement(id = "dpad_buttons", x = 0.28f, y = 0.72f, size = 0.18f, opacity = 0.8f),
+                DpadElement(id = "dpad_buttons", x = 0.35f, y = 0.72f, size = 0.18f, opacity = 0.4f),
                 // Triggers & Bumpers
                 ButtonElement(id = "btn_lt", x = 0.10f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.LT),
                 ButtonElement(id = "btn_rt", x = 0.90f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.RT),

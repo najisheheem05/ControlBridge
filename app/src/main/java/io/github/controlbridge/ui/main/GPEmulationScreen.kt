@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -579,7 +580,7 @@ fun GamepadButton(
                 },
 
                 color = when {
-                    isSelected -> Color.Cyan
+                    isSelected -> Color.Black
                     !button.enabled -> Color.White.copy(alpha = 0.25f)
                     else -> Color.Transparent
                 },
@@ -696,7 +697,7 @@ fun AnalogStick(
                     else -> 0.dp
                 },
                 color = when {
-                    isSelected -> Color.Cyan
+                    isSelected -> Color.Black
                     !dpad.enabled -> Color.White.copy(alpha = 0.25f)
                     else -> Color.Transparent
                 },
@@ -886,7 +887,7 @@ fun DpadButtons(
                     else -> 0.dp
                 },
                 color = when {
-                    isSelected -> Color.Cyan
+                    isSelected -> Color.Black
                     !dpad.enabled -> Color.White.copy(alpha = 0.25f)
                     else -> Color.Transparent
                 },
@@ -919,17 +920,8 @@ fun DpadButtons(
                 )
             }
     ) {
-        val arrowFontSize = with(density) { (sizePx * 0.20f).toSp() }
-
         subButtons.forEach { btn ->
             val isPressed = btn.id in pressedControlIds
-            val arrowText = when (btn.key) {
-                GamepadKey.DPAD_UP -> "▲"
-                GamepadKey.DPAD_DOWN -> "▼"
-                GamepadKey.DPAD_LEFT -> "◀"
-                GamepadKey.DPAD_RIGHT -> "▶"
-                else -> ""
-            }
 
             val relOffsetX = when (btn.key) {
                 GamepadKey.DPAD_LEFT -> sizeDp * 0.18f - subSizeDp / 2
@@ -949,11 +941,21 @@ fun DpadButtons(
                     .background(Color.Transparent),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = arrowText,
-                    fontSize = arrowFontSize,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isPressed) Color.Cyan else Color.White
+                Icon(
+                    painter = painterResource(R.drawable.ic_dpad_chevron),
+                    contentDescription = btn.key.name,
+                    modifier = Modifier
+                        .size(subSizeDp * 0.75f)
+                        .rotate(
+                            when (btn.key) {
+                                GamepadKey.DPAD_DOWN -> 0f
+                                GamepadKey.DPAD_LEFT -> 90f
+                                GamepadKey.DPAD_UP -> 180f
+                                GamepadKey.DPAD_RIGHT -> 270f
+                                else -> 0f
+                            }
+                        ),
+                    tint = if (isPressed) Color.Black else Color.White
                 )
             }
         }
@@ -1198,10 +1200,30 @@ fun GamepadButtonLabel(keyName: String) {
         "X" -> Text("X", style = labelStyle(), color = Color.White)
         "Y" -> Text("Y", style = labelStyle(), color = Color.White)
 
-        "DPAD_UP" -> Text("🢕", style = smallLabelStyle(), color = Color.White)
-        "DPAD_DOWN" -> Text("🢗", style = smallLabelStyle(), color = Color.White)
-        "DPAD_LEFT" -> Text("🢔", style = smallLabelStyle(), color = Color.White)
-        "DPAD_RIGHT" -> Text("🢖", style = smallLabelStyle(), color = Color.White)
+        "DPAD_UP" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Up",
+            modifier = Modifier.size(16.dp).rotate(180f)
+        )
+        "DPAD_DOWN" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Down",
+            modifier = Modifier.size(16.dp)
+        )
+        "DPAD_LEFT" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Left",
+            modifier = Modifier.size(16.dp).rotate(90f)
+        )
+        "DPAD_RIGHT" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Right",
+            modifier = Modifier.size(16.dp).rotate(270f)
+        )
 
         "LB" -> Text("LB", style = smallLabelStyle(), color = Color.White)
         "RB" -> Text("RB", style = smallLabelStyle(), color = Color.White)
