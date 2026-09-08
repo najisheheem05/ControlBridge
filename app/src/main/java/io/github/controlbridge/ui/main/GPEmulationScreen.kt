@@ -1228,16 +1228,16 @@ fun GamepadButtonLabel(keyName: String) {
         "LB" -> Text("LB", style = smallLabelStyle(), color = Color.White)
         "RB" -> Text("RB", style = smallLabelStyle(), color = Color.White)
 
-        "START" -> Icon(
-            painter = painterResource(R.drawable.ic_play_arrow),
-            tint = Color.White,
-            contentDescription = "Start"
-        )
-
-        "SELECT" -> Icon(
+        "START", "MENU" -> Icon(
             painter = painterResource(R.drawable.ic_menu),
             tint = Color.White,
-            contentDescription = "Select"
+            contentDescription = "Menu"
+        )
+
+        "SELECT", "VIEW" -> Icon(
+            painter = painterResource(R.drawable.ic_view),
+            tint = Color.White,
+            contentDescription = "View"
         )
 
         else -> Text(keyName, style = smallLabelStyle(), color = Color.White)

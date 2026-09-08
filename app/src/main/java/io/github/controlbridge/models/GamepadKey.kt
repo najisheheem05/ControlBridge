@@ -19,7 +19,9 @@ enum class GamepadKey(val mask: Int) {
     LB(0x0100),
     RB(0x0200),
     START(0x0010),
-    SELECT(0x0020);
+    SELECT(0x0020),
+    MENU(0x0010),
+    VIEW(0x0020);
 
     val id: Int get() = mask
 }

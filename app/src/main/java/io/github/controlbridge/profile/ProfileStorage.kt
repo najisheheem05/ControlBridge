@@ -66,8 +66,8 @@ object ProfileStorage {
                 ButtonElement(id = "btn_rb", x = 0.75f, y = 0.18f, size = 0.13f, opacity = 0.7f, key = GamepadKey.RB),
                 ButtonElement(id = "btn_l3", x = 0.42f, y = 0.25f, size = 0.07f, opacity = 0.6f, key = GamepadKey.L3),
                 ButtonElement(id = "btn_r3", x = 0.58f, y = 0.25f, size = 0.07f, opacity = 0.6f, key = GamepadKey.R3),
-                ButtonElement(id = "btn_select", x = 0.42f, y = 0.45f, size = 0.07f, opacity = 0.6f, key = GamepadKey.SELECT),
-                ButtonElement(id = "btn_start", x = 0.58f, y = 0.45f, size = 0.07f, opacity = 0.6f, key = GamepadKey.START)
+                ButtonElement(id = "btn_view", x = 0.42f, y = 0.45f, size = 0.07f, opacity = 0.6f, key = GamepadKey.VIEW),
+                ButtonElement(id = "btn_menu", x = 0.58f, y = 0.45f, size = 0.07f, opacity = 0.6f, key = GamepadKey.MENU)
             )
         )
     }
@@ -97,8 +97,8 @@ object ProfileStorage {
                 ButtonElement(id = "btn_l3", x = 0.35f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.L3),
                 ButtonElement(id = "btn_r3", x = 0.65f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.R3),
                 // Navigation
-                ButtonElement(id = "btn_select", x = 0.55f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.SELECT),
-                ButtonElement(id = "btn_start", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.START)
+                ButtonElement(id = "btn_view", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.VIEW),
+                ButtonElement(id = "btn_menu", x = 0.55f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.MENU)
             )
         )
     }
@@ -125,8 +125,8 @@ object ProfileStorage {
                 ButtonElement(id = "btn_l3", x = 0.35f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.L3),
                 ButtonElement(id = "btn_r3", x = 0.65f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.R3),
                 // Navigation
-                ButtonElement(id = "btn_select", x = 0.55f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.SELECT),
-                ButtonElement(id = "btn_start", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.START)
+                ButtonElement(id = "btn_view", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.VIEW),
+                ButtonElement(id = "btn_menu", x = 0.55f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.MENU)
             )
         )
     }
@@ -178,6 +178,8 @@ object ProfileStorage {
             map("btn_lt", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.LT)),
             map("btn_select", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.SELECT)),
             map("btn_start", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.START)),
+            map("btn_view", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.VIEW)),
+            map("btn_menu", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.MENU)),
             map("btn_l3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.L3)),
             map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3)),
             map("dpad_buttons_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
@@ -215,6 +217,8 @@ object ProfileStorage {
             map("btn_lt", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.LT)),
             map("btn_select", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.SELECT)),
             map("btn_start", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.START)),
+            map("btn_view", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.VIEW)),
+            map("btn_menu", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.MENU)),
             map("btn_l3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.L3)),
             map("btn_r3", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.R3)),
             map("dpad_buttons_up", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.DPAD_UP)),
