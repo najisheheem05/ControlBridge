@@ -65,6 +65,7 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
 
 ---
 
+<!--
 ## Screenshots
 
 <p align="center">
@@ -72,8 +73,8 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="250">
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="250">
 </p>
-
 ---
+--!>
 
 ## Getting Started
 

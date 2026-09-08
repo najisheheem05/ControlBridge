@@ -103,6 +103,35 @@ object ProfileStorage {
         )
     }
 
+    fun createAdaptivelLayout(name: String): ControllerLayout {
+        return ControllerLayout(
+            name = name,
+            elements = listOf(
+                // Face buttons (A / B / X / Y)
+                ButtonElement(id = "btn_a", x = 0.77f, y = 0.82f, size = 0.12f, opacity = 0.85f, key = GamepadKey.A),
+                ButtonElement(id = "btn_b", x = 0.91f, y = 0.80f, size = 0.135f, opacity = 0.85f, key = GamepadKey.B),
+                ButtonElement(id = "btn_x", x = 0.915f, y = 0.50f, size = 0.12f, opacity = 0.85f, key = GamepadKey.X),
+                ButtonElement(id = "btn_y", x = 0.79f, y = 0.55f, size = 0.12f, opacity = 0.85f, key = GamepadKey.Y),
+                // Analog stick
+                AnalogStickElement(id = "dpad", x = 0.15f, y = 0.72f, size = 0.15f, opacity = 0.8f),
+                // D-Pad single unified element (4 directional buttons in one cluster)
+                DpadElement(id = "dpad_buttons", x = 0.35f, y = 0.72f, size = 0.18f, opacity = 0.4f),
+                // Triggers & Bumpers
+                ButtonElement(id = "btn_lt", x = 0.10f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.LT),
+                ButtonElement(id = "btn_rt", x = 0.90f, y = 0.15f, size = 0.12f, opacity = 0.7f, enabled = false, key = GamepadKey.RT),
+                ButtonElement(id = "btn_lb", x = 0.25f, y = 0.18f, size = 0.12f, opacity = 0.7f, enabled = true, key = GamepadKey.LB),
+                ButtonElement(id = "btn_rb", x = 0.75f, y = 0.18f, size = 0.12f, opacity = 0.7f, enabled = true, key = GamepadKey.RB),
+                // Stick clicks
+                ButtonElement(id = "btn_l3", x = 0.35f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.L3),
+                ButtonElement(id = "btn_r3", x = 0.65f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.R3),
+                // Navigation
+                ButtonElement(id = "btn_select", x = 0.55f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.SELECT),
+                ButtonElement(id = "btn_start", x = 0.45f, y = 0.15f, size = 0.07f, opacity = 0.6f, enabled = true, key = GamepadKey.START)
+            )
+        )
+    }
+
+
     fun allButtons(layout: ControllerLayout): List<ButtonElement> {
         return layout.elements.flatMap { el ->
             when (el) {
@@ -221,7 +250,7 @@ object ProfileStorage {
                 A  pass/switch
                 B  dash
                 X  shoot/tackle
-                Y  through/press ->match-up
+                Y  through/press R>match-up
             """.trimIndent()
         )
 
