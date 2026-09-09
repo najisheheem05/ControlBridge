@@ -41,8 +41,8 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
         mutableStateListOf<Profile>().apply {
             val loaded = ProfileStorage.load(context)
             if (loaded.isEmpty()) {
-                // Add default eFootball profile on first launch
-                val defaultProfile = ProfileStorage.createDefaultEFootball()
+                // Add default standard controller profile on first launch
+                val defaultProfile = ProfileStorage.createDefaultProfile("Default")
                 add(defaultProfile)
                 ProfileStorage.save(context, listOf(defaultProfile))
             } else {

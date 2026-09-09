@@ -342,7 +342,7 @@ object ProfileStorage {
     }
 
 
-    fun createDefaultProfile(name: String): Profile {
+    fun createDefaultProfile(name: String = "Default"): Profile {
         val layout = createDefaultLayout(name)
         val defaultMappings = allButtons(layout)
             .map { btn ->
