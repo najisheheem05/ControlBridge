@@ -65,6 +65,7 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
 
 ---
 
+<!--
 ## Screenshots
 
 <p align="center">
@@ -72,8 +73,8 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="250">
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="250">
 </p>
-
 ---
+--!>
 
 ## Getting Started
 
@@ -87,12 +88,12 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
 | **Network**       | Both devices on the **same Wi-Fi network**                                                                                                                                           |
 
 ### Setup
-
-1. **Download & install** [PadConnect Receiver](https://github.com/Ishan09811/PadConnectReceiver/releases/tag/v0.3) on your PC
-2. **Install ViGEm driver** (Windows users only) from [ViGEmBus releases](https://github.com/nefarius/ViGEmBus/releases/latest)
-3. **Run** PadConnect Receiver on your PC
-4. **Open** ControlBridge on your phone — it will automatically discover the PC receiver
-5. **Create a profile** and start playing!
+1. **Install ControlBridge app from the releases.
+2. **Download & install** [PadConnect Receiver](https://github.com/Ishan09811/PadConnectReceiver/releases/tag/v0.3) on your PC
+3. **Install ViGEm driver** (Windows users only) from [ViGEmBus releases](https://github.com/nefarius/ViGEmBus/releases/latest)
+4. **Run** PadConnect Receiver on your PC
+5. **Open** ControlBridge on your phone — it will automatically discover the PC receiver
+6. **Create a profile** and start playing!
 
 ### Quick Customization
 

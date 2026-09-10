@@ -6,7 +6,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,14 +48,15 @@ fun ModeSwitchPanel(
         ) {
             Column(
                 modifier = Modifier
-                    .width(180.dp)
-                    .fillMaxHeight(0.5f)
+                    .width(220.dp)
+                    .fillMaxHeight(0.85f)
                     .background(
-                        Color.Black.copy(alpha = 0.85f),
+                        Color.Black.copy(alpha = 0.88f),
                         RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                     )
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     "Modes",
@@ -62,7 +65,7 @@ fun ModeSwitchPanel(
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
 
                 modes.forEach { mode ->
                     val isActive = mode.id == activeModeId

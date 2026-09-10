@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -85,6 +86,8 @@ import io.github.controlbridge.input.GestureRecognizer
 import io.github.controlbridge.models.AnalogStickElement
 import io.github.controlbridge.models.ButtonElement
 import io.github.controlbridge.models.ControllerElement
+import io.github.controlbridge.models.DpadElement
+import io.github.controlbridge.models.GamepadKey
 import io.github.controlbridge.models.GestureType
 import io.github.controlbridge.models.MappingAction
 import io.github.controlbridge.models.Mode
@@ -415,6 +418,20 @@ fun GPEmulationScreen(
                             currentProfile = currentProfile.updateElement(updated.id) { updated }
                         }
                     )
+
+                    is DpadElement -> DpadButtons(
+                        dpad = element,
+                        screenWidth = maxWidth,
+                        screenHeight = maxHeight,
+                        buttonBounds = buttonBounds,
+                        pressedControlIds = pointerTracks.values.map { it.controlId }.toSet(),
+                        isEditMode = isEditMode,
+                        isSelected = selectedElementId == element.id,
+                        onSelect = { selectedElementId = element.id },
+                        onUpdate = { updated ->
+                            currentProfile = currentProfile.updateElement(updated.id) { updated }
+                        }
+                    )
                 }
             }
 
@@ -439,7 +456,11 @@ fun GPEmulationScreen(
                                     opacity = opacity ?: el.opacity,
                                     enabled = enabled ?: el.enabled
                                 )
-                                else -> el
+                                is DpadElement -> el.copy(
+                                    size = size ?: el.size,
+                                    opacity = opacity ?: el.opacity,
+                                    enabled = enabled ?: el.enabled
+                                )
                             }
                             temp = temp.updateElement(updated.id) { updated }
                         }
@@ -559,7 +580,7 @@ fun GamepadButton(
                 },
 
                 color = when {
-                    isSelected -> Color.Cyan
+                    isSelected -> Color.Black
                     !button.enabled -> Color.White.copy(alpha = 0.25f)
                     else -> Color.Transparent
                 },
@@ -676,7 +697,7 @@ fun AnalogStick(
                     else -> 0.dp
                 },
                 color = when {
-                    isSelected -> Color.Cyan
+                    isSelected -> Color.Black
                     !dpad.enabled -> Color.White.copy(alpha = 0.25f)
                     else -> Color.Transparent
                 },
@@ -786,6 +807,158 @@ private fun AnalogStickVisual(knobOffset: Offset) {
                     CircleShape
                 )
         )
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun DpadButtons(
+    dpad: DpadElement,
+    screenWidth: Dp,
+    screenHeight: Dp,
+    buttonBounds: MutableMap<ButtonElement, Rect>,
+    pressedControlIds: Set<String>,
+    isEditMode: Boolean = false,
+    isSelected: Boolean = false,
+    onSelect: () -> Unit = {},
+    onUpdate: (DpadElement) -> Unit = {}
+) {
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { screenWidth.toPx() }
+    val screenHeightPx = with(density) { screenHeight.toPx() }
+
+    val latestDpad by rememberUpdatedState(dpad)
+
+    var localX by remember(dpad.id) { mutableFloatStateOf(dpad.x) }
+    var localY by remember(dpad.id) { mutableFloatStateOf(dpad.y) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    LaunchedEffect(dpad.x, dpad.y) {
+        if (!isDragging) {
+            localX = dpad.x
+            localY = dpad.y
+        }
+    }
+
+    val sizeDp = screenWidth * dpad.size
+    val sizePx = screenWidthPx * dpad.size
+
+    val aspectRatio = if (screenHeightPx > 0) screenWidthPx / screenHeightPx else 1f
+    val dx = dpad.size * 0.32f
+    val dy = dx * aspectRatio
+    val subSize = dpad.size * 0.38f
+
+    val subButtons = remember(localX, localY, dpad.size, dpad.opacity, dpad.enabled, aspectRatio) {
+        listOf(
+            ButtonElement(id = "${dpad.id}_up", x = localX, y = localY - dy, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_UP),
+            ButtonElement(id = "${dpad.id}_down", x = localX, y = localY + dy, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_DOWN),
+            ButtonElement(id = "${dpad.id}_left", x = localX - dx, y = localY, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_LEFT),
+            ButtonElement(id = "${dpad.id}_right", x = localX + dx, y = localY, size = subSize, opacity = dpad.opacity, enabled = dpad.enabled, key = GamepadKey.DPAD_RIGHT)
+        )
+    }
+
+    subButtons.forEach { btn ->
+        val subSizePx = screenWidthPx * btn.size
+        val subXPx = screenWidthPx * btn.x - subSizePx / 2f
+        val subYPx = screenHeightPx * btn.y - subSizePx / 2f
+        buttonBounds[btn] = Rect(
+            subXPx,
+            subYPx,
+            subXPx + subSizePx,
+            subYPx + subSizePx
+        )
+    }
+
+    val subSizeDp = screenWidth * subSize
+
+    Box(
+        modifier = Modifier
+            .offset(
+                x = screenWidth * localX - sizeDp / 2,
+                y = screenHeight * localY - sizeDp / 2
+            )
+            .size(sizeDp)
+            .graphicsLayer { alpha = dpad.opacity }
+            .background(Color.Transparent)
+            .border(
+                width = when {
+                    isSelected -> 2.dp
+                    !dpad.enabled -> 1.dp
+                    else -> 0.dp
+                },
+                color = when {
+                    isSelected -> Color.Black
+                    !dpad.enabled -> Color.White.copy(alpha = 0.25f)
+                    else -> Color.Transparent
+                },
+                shape = CircleShape
+            )
+            .visible(if (!isEditMode) dpad.enabled else true)
+            .pointerInput(isEditMode) {
+                if (!isEditMode) return@pointerInput
+                detectTapGestures(onTap = { onSelect() })
+            }
+            .pointerInput(isEditMode, dpad.enabled) {
+                if (!isEditMode || !dpad.enabled) return@pointerInput
+                detectDragGestures(
+                    onDragStart = {
+                        isDragging = true
+                        onSelect()
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        localX = (localX + dragAmount.x / screenWidthPx).coerceIn(0f, 1f)
+                        localY = (localY + dragAmount.y / screenHeightPx).coerceIn(0f, 1f)
+                    },
+                    onDragEnd = {
+                        isDragging = false
+                        onUpdate(latestDpad.copy(x = localX, y = localY))
+                    },
+                    onDragCancel = {
+                        isDragging = false
+                    }
+                )
+            }
+    ) {
+        subButtons.forEach { btn ->
+            val isPressed = btn.id in pressedControlIds
+
+            val relOffsetX = when (btn.key) {
+                GamepadKey.DPAD_LEFT -> sizeDp * 0.18f - subSizeDp / 2
+                GamepadKey.DPAD_RIGHT -> sizeDp * 0.82f - subSizeDp / 2
+                else -> sizeDp / 2 - subSizeDp / 2
+            }
+            val relOffsetY = when (btn.key) {
+                GamepadKey.DPAD_UP -> sizeDp * 0.18f - subSizeDp / 2
+                GamepadKey.DPAD_DOWN -> sizeDp * 0.82f - subSizeDp / 2
+                else -> sizeDp / 2 - subSizeDp / 2
+            }
+
+            Box(
+                modifier = Modifier
+                    .offset(x = relOffsetX, y = relOffsetY)
+                    .size(subSizeDp)
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_dpad_chevron),
+                    contentDescription = btn.key.name,
+                    modifier = Modifier
+                        .size(subSizeDp * 0.75f)
+                        .rotate(
+                            when (btn.key) {
+                                GamepadKey.DPAD_DOWN -> 0f
+                                GamepadKey.DPAD_LEFT -> 90f
+                                GamepadKey.DPAD_UP -> 180f
+                                GamepadKey.DPAD_RIGHT -> 270f
+                                else -> 0f
+                            }
+                        ),
+                    tint = if (isPressed) Color.Black else Color.White
+                )
+            }
+        }
     }
 }
 
@@ -912,6 +1085,7 @@ fun EditPanel(
                                 when (it) {
                                     is ButtonElement -> onUpdate(it.copy(size = value))
                                     is AnalogStickElement -> onUpdate(it.copy(size = value))
+                                    is DpadElement -> onUpdate(it.copy(size = value))
                                 }
                             }
                         }
@@ -946,6 +1120,7 @@ fun EditPanel(
                                 when (it) {
                                     is ButtonElement -> onUpdate(it.copy(opacity = value))
                                     is AnalogStickElement -> onUpdate(it.copy(opacity = value))
+                                    is DpadElement -> onUpdate(it.copy(opacity = value))
                                 }
                             }
                         }
@@ -985,6 +1160,7 @@ fun EditPanel(
                                     when (it) {
                                         is ButtonElement -> onUpdate(it.copy(enabled = enabled))
                                         is AnalogStickElement -> onUpdate(it.copy(enabled = enabled))
+                                        is DpadElement -> onUpdate(it.copy(enabled = enabled))
                                     }
                                 }
                             }
@@ -1024,19 +1200,44 @@ fun GamepadButtonLabel(keyName: String) {
         "X" -> Text("X", style = labelStyle(), color = Color.White)
         "Y" -> Text("Y", style = labelStyle(), color = Color.White)
 
+        "DPAD_UP" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Up",
+            modifier = Modifier.size(16.dp).rotate(180f)
+        )
+        "DPAD_DOWN" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Down",
+            modifier = Modifier.size(16.dp)
+        )
+        "DPAD_LEFT" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Left",
+            modifier = Modifier.size(16.dp).rotate(90f)
+        )
+        "DPAD_RIGHT" -> Icon(
+            painter = painterResource(R.drawable.ic_dpad_chevron),
+            tint = Color.White,
+            contentDescription = "D-Pad Right",
+            modifier = Modifier.size(16.dp).rotate(270f)
+        )
+
         "LB" -> Text("LB", style = smallLabelStyle(), color = Color.White)
         "RB" -> Text("RB", style = smallLabelStyle(), color = Color.White)
 
-        "START" -> Icon(
-            painter = painterResource(R.drawable.ic_play_arrow),
-            tint = Color.White,
-            contentDescription = "Start"
-        )
-
-        "SELECT" -> Icon(
+        "START", "MENU" -> Icon(
             painter = painterResource(R.drawable.ic_menu),
             tint = Color.White,
-            contentDescription = "Select"
+            contentDescription = "Menu"
+        )
+
+        "SELECT", "VIEW" -> Icon(
+            painter = painterResource(R.drawable.ic_view),
+            tint = Color.White,
+            contentDescription = "View"
         )
 
         else -> Text(keyName, style = smallLabelStyle(), color = Color.White)

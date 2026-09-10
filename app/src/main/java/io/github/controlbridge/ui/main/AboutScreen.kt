@@ -54,10 +54,9 @@ import io.github.controlbridge.R
 fun AboutScreen(
     appName: String = stringResource(id = R.string.app_name),
     version: String = BuildConfig.VERSION_NAME,
-    author: String = "Ishan09811",
     about: String = "Turn your phone into a PC game controller",
-    githubUrl: String = "https://github.com/Ishan09811/PadConnect",
-    discordUrl: String = "https://discord.gg/BrMAZbEyXs",
+    githubUrl: String = "https://github.com/najisheheem05/ControlBridge",
+    //discordUrl: String = "",
     onBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -100,8 +99,7 @@ fun AboutScreen(
                             contentDescription = null,
                             modifier = Modifier
                                 .size(96.dp)
-                                .clip(RoundedCornerShape(24.dp)),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                                .clip(RoundedCornerShape(24.dp))
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -128,34 +126,19 @@ fun AboutScreen(
             }
 
             item {
-                AboutCard(
-                    title = "Author",
-                    content = author
-                )
-            }
-
-            item {
                 Card(
                     shape = RoundedCornerShape(28.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
                         AboutLinkItem(
                             title = "GitHub",
                             subtitle = githubUrl,
                             icon = painterResource(R.drawable.ic_code)
                         ) {
                             openLink(context, githubUrl)
-                        }
-
-                        HorizontalDivider()
-
-                        AboutLinkItem(
-                            title = "Discord",
-                            subtitle = discordUrl,
-                            icon = painterResource(R.drawable.ic_chat)
-                        ) {
-                            openLink(context, discordUrl)
                         }
                     }
                 }

@@ -206,6 +206,7 @@ fun ButtonGrid(
 ) {
     val rows = listOf(
         listOf(GamepadKey.A, GamepadKey.B, GamepadKey.X, GamepadKey.Y),
+        listOf(GamepadKey.DPAD_UP, GamepadKey.DPAD_DOWN, GamepadKey.DPAD_LEFT, GamepadKey.DPAD_RIGHT),
         listOf(GamepadKey.LB, GamepadKey.RB, GamepadKey.LT, GamepadKey.RT),
         listOf(GamepadKey.L3, GamepadKey.R3, GamepadKey.START, GamepadKey.SELECT)
     )
@@ -218,10 +219,17 @@ fun ButtonGrid(
             ) {
                 row.forEach { key ->
                     val isSelected = key in selectedKeys
+                    val labelText = when (key) {
+                        GamepadKey.DPAD_UP -> "D-Up"
+                        GamepadKey.DPAD_DOWN -> "D-Down"
+                        GamepadKey.DPAD_LEFT -> "D-Left"
+                        GamepadKey.DPAD_RIGHT -> "D-Right"
+                        else -> key.name
+                    }
                     FilterChip(
                         selected = isSelected,
                         onClick = { onToggle(key) },
-                        label = { Text(key.name) },
+                        label = { Text(labelText) },
                         modifier = Modifier.weight(1f)
                     )
                 }
