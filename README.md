@@ -13,9 +13,14 @@
 
 ---
 
-PadConnect is an open-source Android app that transforms your phone into a low-latency virtual Xbox 360 controller for PC. What makes ControlBridge unique is its **gesture-based remapping system** — every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons — **no need to reach for extra on-screen buttons with your forefingers**.
+PadConnect is an open-source Android software that transforms your phone into a low-latency virtual Xbox 360 controller for PC. ControlBridge is a fork of PadConnect, What makes ControlBridge unique is its **gesture-based remapping system** — every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons — **no need to reach for extra on-screen buttons with your forefingers**.
 
 ## Features
+
+### Xbox Layout
+
+- Every button in xbox controller including DPAD, Right and Left Stick, Bumps and triggers.
+- Every button is completely Customizable - enable/disable, size, transparency, position.
 
 ### Swipe Gesture Remapping
 
@@ -74,26 +79,30 @@ PadConnect is an open-source Android app that transforms your phone into a low-l
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="250">
 </p>
 ---
---!>
+-->
 
 ## Getting Started
 
 ### Prerequisites
 
-| Component         | Details                                                                                                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Android phone** | Android 10+ (API 29)                                                                                                                                                                 |
-| **PC Receiver**   | [PadConnect Receiver](https://github.com/Ishan09811/PadConnectReceiver/releases/tag/v0.3) (Windows / Linux) — since ControlBridge is a fork of PadConnect, it uses the same receiver |
-| **ViGEm Driver**  | [ViGEmBus](https://github.com/nefarius/ViGEmBus/releases/latest) (Windows only)                                                                                                      |
-| **Network**       | Both devices on the **same Wi-Fi network**                                                                                                                                           |
+| Component         | Details                                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Android phone** | Android 10+ (API 29)                                                                                                                                          |
+| **PC Receiver**   | [ControlBridgeReceiver](https://github.com/najisheheem05/ControlBridgeReceiver) (Windows / Linux) — **Recommended** (supports up to 4 devices simultaneously) |
+| **ViGEm Driver**  | [ViGEmBus](https://github.com/nefarius/ViGEmBus/releases/latest) (Windows only)                                                                               |
+| **Network**       | Both devices on the **same Wi-Fi network**                                                                                                                    |
 
 ### Setup
-1. **Install ControlBridge app from the releases.
-2. **Download & install** [PadConnect Receiver](https://github.com/Ishan09811/PadConnectReceiver/releases/tag/v0.3) on your PC
+
+1. **Install** ControlBridge app from the releases.
+2. **Download** [ControlBridgeReceiver](https://github.com/najisheheem05/ControlBridgeReceiver/releases/latest) on your PC
 3. **Install ViGEm driver** (Windows users only) from [ViGEmBus releases](https://github.com/nefarius/ViGEmBus/releases/latest)
-4. **Run** PadConnect Receiver on your PC
+4. **Run** ControlBridgeReceiver on your PC
 5. **Open** ControlBridge on your phone — it will automatically discover the PC receiver
 6. **Create a profile** and start playing!
+
+> [!TIP]
+> **Recommended:** Use **[ControlBridgeReceiver](https://github.com/najisheheem05/ControlBridgeReceiver)** on your PC to take full advantage of multi-device connections (up to 4 controllers simultaneously, Player 1–4). The legacy PadConnect receiver can also be used as for single-device setups.
 
 ### Quick Customization
 
@@ -202,7 +211,7 @@ Contributions are welcome! To get started:
    git push origin feature/your-feature-name
    ```
 
-6. **Open a Pull Request** against the `master` branch — describe what you changed and why
+6. **Open a Pull Request** against the `main` branch — describe what you changed and why
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines and code of conduct.
 
