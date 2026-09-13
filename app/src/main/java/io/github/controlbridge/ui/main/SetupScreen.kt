@@ -65,7 +65,7 @@ fun SetupScreen(viewModel: GPEmulationViewModel? = null, navigateTo: ((String) -
             title = "Setup required on your PC",
             subtitle = "Download ControlBridgeReceiver on your PC",
             buttonText = "Download Receiver",
-            url = "https://github.com/Ishan09811/PadConnectReceiver/releases/tag/v0.3"
+            url = "https://github.com/najisheheem05/ControlBridgeReceiver/releases/latest"
         ),
         SetupStep(
             title = "Install Driver",
