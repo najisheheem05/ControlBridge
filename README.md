@@ -13,13 +13,8 @@
 
 ---
 
-<<<<<<< HEAD
 PadConnect is an open-source Android software that transforms your phone into a low-latency virtual Xbox 360 controller for PC.ControlBridge is a fork of PadConnect, What makes ControlBridge unique is its **gesture-based remapping system** — every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons — **no need to reach for extra on-screen buttons with your forefingers**
 =======
-
-PadConnect is an open-source Android software that transforms your phone into a low-latency virtual Xbox 360 controller for PC. ControlBridge is a fork of PadConnect, What makes ControlBridge unique is its **gesture-based remapping system** — every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons — **no need to reach for extra on-screen buttons with your forefingers**.
-
-> > > > > > > cBridge_eF
 
 ## Features
 
