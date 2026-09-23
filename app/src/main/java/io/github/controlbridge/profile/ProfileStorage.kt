@@ -191,10 +191,11 @@ object ProfileStorage {
         val pressureMappings = mutableListOf(
             // Dash (btn_a)
             map("btn_b", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
+            map("btn_b", GestureType.SWIPE_LEFT, MappingAction.ButtonPress(GamepadKey.LB)),
 
             // Pass / Switch (btn_b)
             map("btn_a", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.A)),
-            map("btn_a", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.A))),
+            map("btn_a", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.LB, GamepadKey.A))),
             map("btn_a", GestureType.SWIPE_RIGHT, MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.B))),
             map("btn_a", GestureType.SWIPE_UP, MappingAction.ButtonPress(GamepadKey.B)),
 
@@ -208,7 +209,9 @@ object ProfileStorage {
             // Through Pass / press / Match-up  (btn_y)
             map("btn_y", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.Y)),
             map("btn_y", GestureType.SWIPE_UP, MappingAction.MultiButton(listOf(GamepadKey.LB, GamepadKey.Y))),
-            map("btn_y", GestureType.SWIPE_RIGHT, MappingAction.ButtonPress(GamepadKey.LB)),
+            map("btn_y", GestureType.SWIPE_DOWN, MappingAction.MultiButton(listOf(GamepadKey.RB, GamepadKey.LT))),
+            map("btn_y", GestureType.SWIPE_RIGHT, MappingAction.ButtonPress(GamepadKey.LT)),
+            map("btn_y", GestureType.SWIPE_LEFT, MappingAction.MultiButton(listOf(GamepadKey.RB, GamepadKey.Y))),
 
             // lhs == rhs
             map("btn_rt", GestureType.TAP, MappingAction.ButtonPress(GamepadKey.RT)),
