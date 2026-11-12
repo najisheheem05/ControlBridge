@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
@@ -44,6 +45,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.github.controlbridge.dialogs.AlertDialogHost
+import io.github.controlbridge.dialogs.AlertDialogQueue
+import io.github.controlbridge.dialogs.AppDialog
 import io.github.controlbridge.profile.PresetCodec
 import io.github.controlbridge.profile.PresetIO
 import io.github.controlbridge.profile.PresetImportBus
@@ -56,6 +59,7 @@ import io.github.controlbridge.ui.remap.MacroListScreen
 import io.github.controlbridge.ui.remap.RemapScreen
 import io.github.controlbridge.ui.settings.AdvancedSettingsScreen
 import io.github.controlbridge.ui.settings.CoreSettingsScreen
+import io.github.controlbridge.ui.settings.DisclaimerScreen
 import io.github.controlbridge.ui.settings.DisplaySettingsScreen
 import io.github.controlbridge.ui.settings.SettingsScreen
 import io.github.controlbridge.ui.settings.ThemeSettingsScreen
@@ -161,6 +165,26 @@ fun ControlBridgeApp(viewmodel: GPEmulationViewModel) {
         }
     }
 
+    val warningTitle = stringResource(R.string.game_ban_warning_title)
+    val warningMessage = stringResource(R.string.game_ban_warning_message)
+
+    LaunchedEffect(Unit) {
+        if (!GlobalConfig.GAME_BAN_WARNING_ACKNOWLEDGED.boolean) {
+            AlertDialogQueue.show(
+                AppDialog.Message(
+                    title = warningTitle,
+                    message = warningMessage,
+                    confirmText = "I Understand",
+                    dismissible = false,
+                    centered = true,
+                    onConfirm = {
+                        GlobalConfig.GAME_BAN_WARNING_ACKNOWLEDGED.boolean = true
+                    }
+                )
+            )
+        }
+    }
+
     AlertDialogHost()
 
     NavigationSuiteScaffold(
@@ -263,6 +287,10 @@ fun HomeNavGraph(navController: NavHostController, viewModel: GPEmulationViewMod
             AboutScreen()
         }
 
+        composable("disclaimer") {
+            DisclaimerScreen(navigateBack = navController::navigateUp)
+        }
+
         // Emulation screen - now uses profile ID
         composable(
             route = "emulation/{profileId}/{isEditMode}",
@@ -328,5 +356,5 @@ enum class AppDestinations(
     val icon: Int,
 ) {
     HOME("Profiles", R.drawable.ic_home),
-    SETTINGS("Settings", io.github.compose_preferences.R.drawable.ic_settings),
+    SETTINGS("Options", io.github.compose_preferences.R.drawable.ic_settings),
 }

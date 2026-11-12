@@ -9,6 +9,7 @@
 
 package io.github.controlbridge.dialogs
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +20,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 
 sealed interface AppDialog {
     data class Message(
@@ -26,6 +30,8 @@ sealed interface AppDialog {
         val message: String,
         val confirmText: String = "OK",
         val dismissText: String = "Cancel",
+        val dismissible: Boolean = true,
+        val centered: Boolean = false,
         val onConfirm: () -> Unit = {}
     ) : AppDialog
 
@@ -66,30 +72,46 @@ fun AlertDialogHost() {
         is AppDialog.Message -> {
             AlertDialog(
                 onDismissRequest = {
-                    AlertDialogQueue.dismissCurrent()
+                    if (dialog.dismissible) {
+                        AlertDialogQueue.dismissCurrent()
+                    }
                 },
-                title = { Text(dialog.title) },
+                title = {
+                    Text(
+                        dialog.title,
+                        modifier = if (dialog.centered) Modifier.fillMaxWidth() else Modifier,
+                        textAlign = if (dialog.centered) TextAlign.Center else null,
+                        fontWeight = if (dialog.centered) FontWeight.Bold else null
+                    )
+                },
                 text = { Text(dialog.message) },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             dialog.onConfirm()
                             AlertDialogQueue.dismissCurrent()
-                        }
+                        },
+                        modifier = if (dialog.centered) Modifier.fillMaxWidth() else Modifier
                     ) {
-                        Text(dialog.confirmText)
+                        Text(
+                            dialog.confirmText,
+                            modifier = if (dialog.centered) Modifier.fillMaxWidth() else Modifier,
+                            textAlign = if (dialog.centered) TextAlign.Center else null
+                        )
                     }
                 },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            //TODO: dialog.onDismiss()
-                            AlertDialogQueue.dismissCurrent()
+                dismissButton = if (dialog.dismissible) {
+                    {
+                        TextButton(
+                            onClick = {
+                                //TODO: dialog.onDismiss()
+                                AlertDialogQueue.dismissCurrent()
+                            }
+                        ) {
+                            Text(dialog.dismissText)
                         }
-                    ) {
-                        Text(dialog.dismissText)
                     }
-                }
+                } else null
             )
         }
 

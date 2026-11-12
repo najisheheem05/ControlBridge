@@ -25,6 +25,7 @@ import java.io.File
 data class ConfigModel(
     // Setup
     val initialSetupFinished: Boolean = BuildConfig.DEBUG,
+    val gameBanWarningAcknowledged: Boolean = false,
     // Advanced Settings
     // (Core)
     val inputUpdateRate: Int = 500,
@@ -82,6 +83,15 @@ object GlobalConfig {
             get() = config.initialSetupFinished
             set(value) {
                 config = config.copy(initialSetupFinished = value)
+                save()
+            }
+    }
+
+    object GAME_BAN_WARNING_ACKNOWLEDGED {
+        var boolean: Boolean
+            get() = config.gameBanWarningAcknowledged
+            set(value) {
+                config = config.copy(gameBanWarningAcknowledged = value)
                 save()
             }
     }

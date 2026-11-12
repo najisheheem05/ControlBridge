@@ -96,6 +96,17 @@ fun SettingsScreen(
                     }
                 )
             }
+
+            item(key = "disclaimer") {
+                HomePreference(
+                    title = stringResource(R.string.game_ban_warning_section_title),
+                    icon = { Icon(painterResource(R.drawable.ic_warning), null) },
+                    description = stringResource(R.string.disclaimer_description),
+                    onClick = {
+                        navigateTo?.invoke("disclaimer")
+                    }
+                )
+            }
         }
     }
 }

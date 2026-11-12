@@ -11,4 +11,8 @@
     <string name="theme_settings_description">Modify the look of the app</string>
     <string name="about">About</string>
     <string name="about_desc">Version and more</string>
+    <string name="game_ban_warning_title">Warning</string>
+    <string name="game_ban_warning_section_title">Disclaimer</string>
+    <string name="disclaimer_description">Important notice about macros and button combinations</string>
+    <string name="game_ban_warning_message">Using button combinations or macros may violate the terms of service of some games and could result in your game account being banned or suspended.\n\nYou are fully responsible for how you use these features. ControlBridge and its developers are not responsible for any bans or penalties. Please handle these features with care.</string>
 </resources>
