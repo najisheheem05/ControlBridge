@@ -48,12 +48,21 @@ PadConnect is an open-source Android software that transforms your phone into a 
 - Switch modes **on-the-fly during gameplay** via the HUD dropdown or a remapped gesture
 - Optional per-mode **guide text overlay** to display your custom control legend on-screen
 
+### Preset Sharing
+
+- **Share any profile** as a `.cbpreset` file or a compact `controlbridge://preset?...` link
+- Presets include the full layout, modes, mappings, macros, and guide text
+- **Import** from the `+` → _New Controller Profile_ dialog using **From file** or **From link**
+- Imported presets are validated, previewed, and can be renamed before being added
+- Preset files are versioned and tolerate unknown fields for forward compatibility
+
 ### Layout Editor
 
 - **Drag and drop** any button or analog stick to reposition it anywhere on screen
 - Adjust **size and opacity** per element or globally
 - **Enable/disable** individual buttons you don't need
 - **Reset** individual elements or the entire layout to defaults
+- Gameplay and layout editing open in **locked landscape** for consistent thumb placement
 
 ### Low-Latency Connection
 
@@ -88,7 +97,7 @@ PadConnect is an open-source Android software that transforms your phone into a 
 3. **Install ViGEm driver** (Windows users only) from [ViGEmBus releases](https://github.com/nefarius/ViGEmBus/releases/latest)
 4. **Run** ControlBridgeReceiver on your PC
 5. **Open** ControlBridge on your phone — it will automatically discover the PC receiver
-6. **Create a profile** and start playing!
+6. **Create a profile** (or import a shared preset) and start playing!
 
 > [!TIP]
 > **Recommended:** Use **[ControlBridgeReceiver](https://github.com/najisheheem05/ControlBridgeReceiver)** on your PC to take full advantage of multi-device connections (up to 4 controllers simultaneously, Player 1–4). The legacy PadConnect receiver can also be used as for single-device setups.
@@ -98,8 +107,21 @@ PadConnect is an open-source Android software that transforms your phone into a 
 - **Edit layout**: Long-press a profile → _Edit Layout_ → Drag buttons, resize, toggle visibility
 - **Remap controls**: Long-press a profile → _Remap Controls_ → Pick a button → Pick a gesture → Assign an action
 - **Create macros**: Inside Remap Controls → _Manage Macros_ → Build step-by-step sequences
+- **Share a preset**: Long-press a profile → _Share preset file_ or _Share preset link_
+- **Import a preset**: Tap `+` → _From file_ or _From link_ → Preview and add it
 
 ---
+
+# firewalld
+
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="PHONE_IP/32" port port="8083" protocol="udp" accept'
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="PHONE_IP/32" port port="8082" protocol="udp" accept'
+sudo firewall-cmd --reload
+
+# ufw
+
+sudo ufw allow from PHONE_IP to any port 8083 proto udp
+sudo ufw allow from PHONE_IP to any port 8082 proto udp
 
 ## How Swipe Gestures Work
 
@@ -162,7 +184,8 @@ io.github.controlbridge/
 ├── engine/           # MappingEngine (gesture→action dispatch), MacroEngine (async sequences)
 ├── input/            # GestureRecognizer (directional swipe detection)
 ├── models/           # Data models (Profile, Mode, Mapping, Macro, GamepadKey, etc.)
-├── profile/          # ProfileStorage (JSON persistence)
+├── profile/          # ProfileStorage (JSON persistence), PresetCodec (file/link codec),
+│                     # PresetIO (share/import), PresetImportBus (incoming preset events)
 ├── transport/        # TransportManager, UdpTransport, BleTransport, GamepadTransport
 ├── ui/
 │   ├── main/         # ProfilesScreen, GPEmulationScreen, SetupScreen, AboutScreen
