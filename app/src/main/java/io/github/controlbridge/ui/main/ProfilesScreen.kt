@@ -508,7 +508,7 @@ fun CreateProfileDialog(
                 HorizontalDivider()
 
                 Text(
-                    "Or import a shared preset",
+                    "Or import a preset",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
