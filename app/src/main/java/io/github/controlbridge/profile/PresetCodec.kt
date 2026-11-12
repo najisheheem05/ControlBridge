@@ -6,6 +6,7 @@ import io.github.controlbridge.models.ControllerElement
 import io.github.controlbridge.models.DpadElement
 import io.github.controlbridge.models.MappingAction
 import io.github.controlbridge.models.Profile
+import io.github.controlbridge.models.sanitizeButtonLabel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -146,7 +147,8 @@ object PresetCodec {
             x = x.coerceIn(0f, 1f),
             y = y.coerceIn(0f, 1f),
             size = size.coerceIn(0.01f, 1f),
-            opacity = opacity.coerceIn(0f, 1f)
+            opacity = opacity.coerceIn(0f, 1f),
+            label = sanitizeButtonLabel(label)
         )
         is AnalogStickElement -> copy(
             x = x.coerceIn(0f, 1f),

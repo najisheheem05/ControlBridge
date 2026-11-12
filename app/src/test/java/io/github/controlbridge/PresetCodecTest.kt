@@ -1,7 +1,9 @@
 package io.github.controlbridge
 
+import io.github.controlbridge.models.ButtonElement
 import io.github.controlbridge.models.GamepadKey
 import io.github.controlbridge.models.GestureType
+import io.github.controlbridge.models.MAX_BUTTON_LABEL_LENGTH
 import io.github.controlbridge.models.Macro
 import io.github.controlbridge.models.MacroStep
 import io.github.controlbridge.models.Mapping
@@ -44,6 +46,51 @@ class PresetCodecTest {
             original.modes.first { it.name == "Standard style" }.guideText,
             decoded.modes.first { it.name == "Standard style" }.guideText
         )
+    }
+
+    @Test
+    fun fileRoundTripPreservesCustomButtonLabel() {
+        val original = ProfileStorage.createDefaultProfile("Label share")
+        val layout = original.layout.copy(
+            elements = original.layout.elements.map { element ->
+                if (element is ButtonElement && element.id == "btn_a") {
+                    element.copy(label = "Pass")
+                } else {
+                    element
+                }
+            }
+        )
+
+        val decoded = PresetCodec.decode(
+            PresetCodec.encode(original.copy(layout = layout))
+        ).getOrThrow()
+
+        val decodedButton = decoded.layout.elements.first { it.id == "btn_a" } as ButtonElement
+        assertEquals("Pass", decodedButton.label)
+    }
+
+    @Test
+    fun sanitizesCustomButtonLabels() {
+        val original = ProfileStorage.createDefaultProfile("Label sanitize")
+        val rawLabel = "  Pass\nand move\t" + "x".repeat(40)
+        val layout = original.layout.copy(
+            elements = original.layout.elements.map { element ->
+                if (element is ButtonElement && element.id == "btn_a") {
+                    element.copy(label = rawLabel)
+                } else {
+                    element
+                }
+            }
+        )
+
+        val decoded = PresetCodec.decode(
+            PresetCodec.encode(original.copy(layout = layout))
+        ).getOrThrow()
+
+        val label = (decoded.layout.elements.first { it.id == "btn_a" } as ButtonElement).label!!
+        assertEquals(MAX_BUTTON_LABEL_LENGTH, label.length)
+        assertTrue(label.none { it == '\n' || it == '\r' || it == '\t' })
+        assertEquals(label.trim(), label)
     }
 
     @Test

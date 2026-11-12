@@ -125,6 +125,36 @@ class ProfileSerializationTest {
     }
 
     @Test
+    fun testCustomButtonLabelSerialization() {
+        val base = ProfileStorage.createDefaultProfile("Labels")
+        val layout = base.layout.copy(
+            elements = base.layout.elements.map { element ->
+                if (element is ButtonElement && element.id == "btn_a") {
+                    element.copy(label = "Pass")
+                } else {
+                    element
+                }
+            }
+        )
+
+        val decoded = json.decodeFromString<Profile>(
+            json.encodeToString(base.copy(layout = layout))
+        )
+        val decodedButton = decoded.layout.elements.first { it.id == "btn_a" } as ButtonElement
+
+        assertEquals("Pass", decodedButton.label)
+    }
+
+    @Test
+    fun testMissingCustomLabelDefaultsToNull() {
+        val decoded = json.decodeFromString<ControllerElement>(
+            """{"type":"button","id":"btn_a","x":0.5,"y":0.5,"size":0.1,"opacity":1.0,"key":"A"}"""
+        ) as ButtonElement
+
+        assertNull(decoded.label)
+    }
+
+    @Test
     fun testDpadButtonsSerialization() {
         val profile = ProfileStorage.createDefaultProfile("DpadTest")
         val dpad = profile.layout.elements.find { it is DpadElement } as? DpadElement

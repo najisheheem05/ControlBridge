@@ -5,6 +5,19 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+const val MAX_BUTTON_LABEL_LENGTH = 16
+
+fun sanitizeButtonLabel(label: String?): String? {
+    if (label == null) return null
+    return label
+        .replace('\n', ' ')
+        .replace('\r', ' ')
+        .replace('\t', ' ')
+        .trim()
+        .take(MAX_BUTTON_LABEL_LENGTH)
+        .ifBlank { null }
+}
+
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class ControllerLayout(
@@ -34,7 +47,8 @@ data class ButtonElement(
     override val size: Float,
     override val opacity: Float,
     override val enabled: Boolean = true,
-    val key: GamepadKey
+    val key: GamepadKey,
+    val label: String? = null
 ) : ControllerElement()
 
 @Immutable

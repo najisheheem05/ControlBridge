@@ -20,7 +20,7 @@ PadConnect is an open-source Android software that transforms your phone into a 
 ### Xbox Layout
 
 - Every button in xbox controller including DPAD, Right and Left Stick, Bumps and triggers.
-- Every button is completely Customizable - enable/disable, size, transparency, position.
+- Every button is completely Customizable - enable/disable, size, transparency, position, custom label.
 
 ### Swipe Gesture Remapping
 
@@ -51,14 +51,15 @@ PadConnect is an open-source Android software that transforms your phone into a 
 ### Preset Sharing
 
 - **Share any profile** as a `.cbpreset` file or a compact `controlbridge://preset?...` link
-- Presets include the full layout, modes, mappings, macros, and guide text
-- **Import** from the `+` → _New Controller Profile_ dialog using **From file** or **From link**
+- Presets include the full layout, custom button labels, modes, mappings, macros, and guide text
+- **Import** from the `+` → _New Controller Profile_ dialog using **From file** or **From link** or just opening the preset file or link will be redirected to the application for setup itself.
 - Imported presets are validated, previewed, and can be renamed before being added
 - Preset files are versioned and tolerate unknown fields for forward compatibility
 
 ### Layout Editor
 
 - **Drag and drop** any button or analog stick to reposition it anywhere on screen
+- **Custom button labels** — replace A/B/X with short text (up to 16 characters, e.g. "Pass", "Shoot"). Labels auto-shrink to fit small buttons but are capped at 16sp; leave the field blank to restore the default key label
 - Adjust **size and opacity** per element or globally
 - **Enable/disable** individual buttons you don't need
 - **Reset** individual elements or the entire layout to defaults
@@ -105,6 +106,7 @@ PadConnect is an open-source Android software that transforms your phone into a 
 ### Quick Customization
 
 - **Edit layout**: Long-press a profile → _Edit Layout_ → Drag buttons, resize, toggle visibility
+- **Rename buttons**: Long-press a profile → _Edit Layout_ → Select a button → enter a _Custom label_ (blank = default A/B/X)
 - **Remap controls**: Long-press a profile → _Remap Controls_ → Pick a button → Pick a gesture → Assign an action
 - **Create macros**: Inside Remap Controls → _Manage Macros_ → Build step-by-step sequences
 - **Share a preset**: Long-press a profile → _Share preset file_ or _Share preset link_

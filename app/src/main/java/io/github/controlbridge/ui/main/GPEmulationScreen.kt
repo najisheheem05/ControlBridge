@@ -32,10 +32,13 @@ import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,6 +70,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -90,6 +95,7 @@ import io.github.controlbridge.models.ControllerElement
 import io.github.controlbridge.models.DpadElement
 import io.github.controlbridge.models.GamepadKey
 import io.github.controlbridge.models.GestureType
+import io.github.controlbridge.models.MAX_BUTTON_LABEL_LENGTH
 import io.github.controlbridge.models.MappingAction
 import io.github.controlbridge.models.Mode
 import io.github.controlbridge.models.Profile
@@ -633,10 +639,39 @@ fun GamepadButton(
                 alpha = if (button.enabled) button.opacity else 0.35f
             }
         ) {
-            GamepadButtonLabel(button.key.name)
+            val customLabel = button.label
+            if (!customLabel.isNullOrBlank()) {
+                CustomGamepadButtonLabel(customLabel, sizeDp)
+            } else {
+                GamepadButtonLabel(button.key.name)
+            }
         }
     }
 }
+
+@Composable
+private fun CustomGamepadButtonLabel(label: String, buttonSize: Dp) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.SemiBold
+        ),
+        color = Color.White,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = CUSTOM_LABEL_MIN_FONT_SIZE,
+            maxFontSize = CUSTOM_LABEL_MAX_FONT_SIZE,
+            stepSize = 0.5.sp
+        ),
+        modifier = Modifier.padding(horizontal = buttonSize * 0.12f)
+    )
+}
+
+private val CUSTOM_LABEL_MIN_FONT_SIZE = 6.sp
+private val CUSTOM_LABEL_MAX_FONT_SIZE = 16.sp
 
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -1140,6 +1175,37 @@ fun EditPanel(
                 )
 
                 Spacer(Modifier.height(12.dp))
+
+                if (element is ButtonElement) {
+                    OutlinedTextField(
+                        value = element.label.orEmpty(),
+                        onValueChange = { raw ->
+                            val cleaned = raw
+                                .replace('\n', ' ')
+                                .replace('\r', ' ')
+                                .take(MAX_BUTTON_LABEL_LENGTH)
+                            onUpdate(element.copy(label = cleaned.ifBlank { null }))
+                        },
+                        label = { Text("Custom label") },
+                        placeholder = { Text(element.key.name) },
+                        supportingText = {
+                            Text("${element.label.orEmpty().length}/$MAX_BUTTON_LABEL_LENGTH")
+                        },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            cursorColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
