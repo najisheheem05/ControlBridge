@@ -1,5 +1,8 @@
 package io.github.controlbridge.ui.main
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -29,9 +32,16 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.controlbridge.R
 import io.github.controlbridge.models.GameTemplate
 import io.github.controlbridge.models.Profile
+import io.github.controlbridge.profile.PresetCodec
+import io.github.controlbridge.profile.PresetIO
+import io.github.controlbridge.profile.PresetImportBus
+import io.github.controlbridge.profile.PresetImportEvent
 import io.github.controlbridge.profile.ProfileStorage
 import io.github.controlbridge.viewmodel.GPEmulationViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,7 +61,48 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
         }
     }
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showImportMenu by remember { mutableStateOf(false) }
+    var showLinkDialog by remember { mutableStateOf(false) }
+    var importCandidate by remember { mutableStateOf<Profile?>(null) }
+    var importError by remember { mutableStateOf<String?>(null) }
+    val pendingImport by PresetImportBus.pending.collectAsState()
+
+    fun openImportPreview(text: String, fromLink: Boolean) {
+        scope.launch {
+            val result = withContext(Dispatchers.IO) {
+                if (fromLink) PresetCodec.decodeLink(text) else PresetCodec.decode(text)
+            }
+            result.onSuccess { importCandidate = it }
+                .onFailure { importError = it.message ?: "This preset could not be read." }
+        }
+    }
+
+    val importFileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val result = withContext(Dispatchers.IO) {
+                    runCatching { PresetIO.readText(context, uri) }
+                }
+                result.onSuccess { openImportPreview(it, fromLink = false) }
+                    .onFailure {
+                        importError = it.message ?: "Could not read the preset file."
+                    }
+            }
+        }
+    }
+
+    LaunchedEffect(pendingImport) {
+        val event = pendingImport ?: return@LaunchedEffect
+        PresetImportBus.consume()
+        when (event) {
+            is PresetImportEvent.Payload -> openImportPreview(event.text, event.fromLink)
+            is PresetImportEvent.Error -> importError = event.message
+        }
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -76,17 +127,64 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
                 }
             }
 
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.TopStart
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
                 ReceiverStatusChip(
                     isActive = isActive,
                     expanded = expanded,
                     onExpandRequest = { expanded = true }
                 )
+                Box {
+                    IconButton(onClick = { showImportMenu = true }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_file_download),
+                            contentDescription = "Import preset"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showImportMenu,
+                        onDismissRequest = { showImportMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_file_download),
+                                    contentDescription = null
+                                )
+                            },
+                            text = { Text("Import from file") },
+                            onClick = {
+                                showImportMenu = false
+                                importFileLauncher.launch(
+                                    arrayOf(
+                                        "application/vnd.controlbridge.preset+json",
+                                        "application/json",
+                                        "application/octet-stream",
+                                        "*/*"
+                                    )
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_link),
+                                    contentDescription = null
+                                )
+                            },
+                            text = { Text("Paste preset link") },
+                            onClick = {
+                                showImportMenu = false
+                                showLinkDialog = true
+                            }
+                        )
+                    }
+                }
             }
         },
         floatingActionButton = {
@@ -122,6 +220,36 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
                         onClick = { navigateTo("emulation/${it.id}/false") },
                         onEdit = { navigateTo("emulation/${it.id}/true") },
                         onRemap = { navigateTo("remap/${it.id}") },
+                        onShare = { selected ->
+                            runCatching { PresetIO.sharePreset(context, selected) }
+                                .onFailure { error ->
+                                    Toast.makeText(
+                                        context,
+                                        error.message ?: "Could not share the preset.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                        },
+                        onShareLink = { selected ->
+                            runCatching { PresetIO.shareLink(context, selected) }
+                                .onFailure { error ->
+                                    Toast.makeText(
+                                        context,
+                                        error.message ?: "Could not share the preset link.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                        },
+                        onCopyLink = { selected ->
+                            runCatching { PresetIO.copyLink(context, selected) }
+                                .onFailure { error ->
+                                    Toast.makeText(
+                                        context,
+                                        error.message ?: "Could not copy the preset link.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                        },
                         onDelete = {
                             profiles.remove(it)
                             ProfileStorage.save(context, profiles.toList())
@@ -144,6 +272,171 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
             }
         )
     }
+
+    importCandidate?.let { candidate ->
+        ImportPresetDialog(
+            profile = candidate,
+            existingNames = profiles.map { it.name }.toSet(),
+            onDismiss = { importCandidate = null },
+            onImport = { name ->
+                profiles.add(candidate.copy(name = name))
+                ProfileStorage.save(context, profiles.toList())
+                importCandidate = null
+                Toast.makeText(context, "Preset \"$name\" added", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    importError?.let { message ->
+        AlertDialog(
+            onDismissRequest = { importError = null },
+            title = { Text("Import failed", fontWeight = FontWeight.Bold) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { importError = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showLinkDialog) {
+        ImportLinkDialog(
+            onDismiss = { showLinkDialog = false },
+            onImport = { link ->
+                showLinkDialog = false
+                openImportPreview(link, fromLink = true)
+            }
+        )
+    }
+}
+
+@Composable
+private fun ImportLinkDialog(
+    onDismiss: () -> Unit,
+    onImport: (String) -> Unit
+) {
+    var link by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Paste Preset Link", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Paste a controlbridge://preset link that was shared with you.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = link,
+                    onValueChange = { link = it },
+                    label = { Text("Preset link") },
+                    minLines = 2,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onImport(link.trim()) },
+                enabled = link.isNotBlank()
+            ) {
+                Text("Import")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun ImportPresetDialog(
+    profile: Profile,
+    existingNames: Set<String>,
+    onDismiss: () -> Unit,
+    onImport: (String) -> Unit
+) {
+    var presetName by remember(profile) {
+        mutableStateOf(ProfileStorage.generateUniqueName(profile.name, existingNames))
+    }
+    var isNameError by remember { mutableStateOf(false) }
+    val mappingCount = profile.modes.sumOf { it.mappings.size }
+    val macroCount = profile.modes.sumOf { it.macros.size }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Import Preset", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    "Only import presets from people you trust.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    "${profile.modes.size} mode${if (profile.modes.size != 1) "s" else ""}, " +
+                        "$mappingCount mapping${if (mappingCount != 1) "s" else ""}, " +
+                        "$macroCount macro${if (macroCount != 1) "s" else ""}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                OutlinedTextField(
+                    value = presetName,
+                    onValueChange = {
+                        presetName = it
+                        isNameError = it.isBlank() || it.trim() in existingNames
+                    },
+                    label = { Text("Preset Name") },
+                    singleLine = true,
+                    isError = isNameError,
+                    supportingText = {
+                        if (isNameError) {
+                            Text(
+                                if (presetName.isBlank()) "Name cannot be empty" else "Name already exists",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val trimmed = presetName.trim()
+                    if (trimmed.isNotBlank() && trimmed !in existingNames) {
+                        onImport(trimmed)
+                    } else {
+                        isNameError = true
+                    }
+                },
+                enabled = presetName.trim().isNotBlank() && presetName.trim() !in existingNames
+            ) {
+                Text("Add Preset")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -154,7 +447,7 @@ fun CreateProfileDialog(
 ) {
     var selectedTemplate by remember { mutableStateOf(GameTemplate.DEFAULT) }
     var profileName by remember {
-        mutableStateOf(generateUniqueName(selectedTemplate.displayName, existingNames))
+        mutableStateOf(ProfileStorage.generateUniqueName(selectedTemplate.displayName, existingNames))
     }
     var isNameError by remember { mutableStateOf(false) }
 
@@ -183,7 +476,7 @@ fun CreateProfileDialog(
                             .fillMaxWidth()
                             .clickable {
                                 selectedTemplate = template
-                                profileName = generateUniqueName(template.displayName, existingNames)
+                                profileName = ProfileStorage.generateUniqueName(template.displayName, existingNames)
                                 isNameError = false
                             },
                         shape = RoundedCornerShape(12.dp),
@@ -200,7 +493,7 @@ fun CreateProfileDialog(
                                 selected = isSelected,
                                 onClick = {
                                     selectedTemplate = template
-                                    profileName = generateUniqueName(template.displayName, existingNames)
+                                    profileName = ProfileStorage.generateUniqueName(template.displayName, existingNames)
                                     isNameError = false
                                 }
                             )
@@ -267,15 +560,6 @@ fun CreateProfileDialog(
     )
 }
 
-private fun generateUniqueName(base: String, existing: Set<String>): String {
-    if (base !in existing) return base
-    var count = 2
-    while ("$base ($count)" in existing) {
-        count++
-    }
-    return "$base ($count)"
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ProfileCard(
@@ -283,6 +567,9 @@ private fun ProfileCard(
     onClick: (Profile) -> Unit,
     onEdit: (Profile) -> Unit,
     onRemap: (Profile) -> Unit,
+    onShare: (Profile) -> Unit,
+    onShareLink: (Profile) -> Unit,
+    onCopyLink: (Profile) -> Unit,
     onDelete: (Profile) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -331,6 +618,31 @@ private fun ProfileCard(
                     onClick = {
                         menuExpanded = false
                         onRemap(profile)
+                    }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    leadingIcon = { Icon(painter = painterResource(R.drawable.ic_share), contentDescription = "Share preset") },
+                    text = { Text("Share preset file") },
+                    onClick = {
+                        menuExpanded = false
+                        onShare(profile)
+                    }
+                )
+                DropdownMenuItem(
+                    leadingIcon = { Icon(painter = painterResource(R.drawable.ic_link), contentDescription = "Share preset link") },
+                    text = { Text("Share preset link") },
+                    onClick = {
+                        menuExpanded = false
+                        onShareLink(profile)
+                    }
+                )
+                DropdownMenuItem(
+                    leadingIcon = { Icon(painter = painterResource(R.drawable.ic_content_copy), contentDescription = "Copy preset link") },
+                    text = { Text("Copy preset link") },
+                    onClick = {
+                        menuExpanded = false
+                        onCopyLink(profile)
                     }
                 )
                 HorizontalDivider()
