@@ -63,7 +63,6 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     var showCreateDialog by remember { mutableStateOf(false) }
-    var showImportMenu by remember { mutableStateOf(false) }
     var showLinkDialog by remember { mutableStateOf(false) }
     var importCandidate by remember { mutableStateOf<Profile?>(null) }
     var importError by remember { mutableStateOf<String?>(null) }
@@ -127,64 +126,17 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
                 }
             }
 
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                contentAlignment = Alignment.TopStart
             ) {
                 ReceiverStatusChip(
                     isActive = isActive,
                     expanded = expanded,
                     onExpandRequest = { expanded = true }
                 )
-                Box {
-                    IconButton(onClick = { showImportMenu = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_file_download),
-                            contentDescription = "Import preset"
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showImportMenu,
-                        onDismissRequest = { showImportMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_file_download),
-                                    contentDescription = null
-                                )
-                            },
-                            text = { Text("Import from file") },
-                            onClick = {
-                                showImportMenu = false
-                                importFileLauncher.launch(
-                                    arrayOf(
-                                        "application/vnd.controlbridge.preset+json",
-                                        "application/json",
-                                        "application/octet-stream",
-                                        "*/*"
-                                    )
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_link),
-                                    contentDescription = null
-                                )
-                            },
-                            text = { Text("Paste preset link") },
-                            onClick = {
-                                showImportMenu = false
-                                showLinkDialog = true
-                            }
-                        )
-                    }
-                }
             }
         },
         floatingActionButton = {
@@ -269,6 +221,21 @@ fun ProfilesScreen(navigateTo: (String) -> Unit, viewModel: GPEmulationViewModel
                 profiles.add(newProfile)
                 ProfileStorage.save(context, profiles.toList())
                 showCreateDialog = false
+            },
+            onImportFile = {
+                showCreateDialog = false
+                importFileLauncher.launch(
+                    arrayOf(
+                        "application/vnd.controlbridge.preset+json",
+                        "application/json",
+                        "application/octet-stream",
+                        "*/*"
+                    )
+                )
+            },
+            onImportLink = {
+                showCreateDialog = false
+                showLinkDialog = true
             }
         )
     }
@@ -443,7 +410,9 @@ private fun ImportPresetDialog(
 fun CreateProfileDialog(
     existingNames: Set<String>,
     onDismiss: () -> Unit,
-    onCreate: (GameTemplate, String) -> Unit
+    onCreate: (GameTemplate, String) -> Unit,
+    onImportFile: () -> Unit,
+    onImportLink: () -> Unit
 ) {
     var selectedTemplate by remember { mutableStateOf(GameTemplate.DEFAULT) }
     var profileName by remember {
@@ -535,6 +504,48 @@ fun CreateProfileDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                HorizontalDivider()
+
+                Text(
+                    "Or import a shared preset",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "Import a .cbpreset file or a controlbridge:// link shared by another player.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onImportFile,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_file_download),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("From file")
+                    }
+                    OutlinedButton(
+                        onClick = onImportLink,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_link),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("From link")
+                    }
+                }
             }
         },
         confirmButton = {
