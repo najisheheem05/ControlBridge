@@ -8,11 +8,15 @@
 
 package io.github.controlbridge
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.core.content.IntentCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -40,6 +44,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.github.controlbridge.dialogs.AlertDialogHost
+import io.github.controlbridge.profile.PresetCodec
+import io.github.controlbridge.profile.PresetIO
+import io.github.controlbridge.profile.PresetImportBus
 import io.github.controlbridge.profile.ProfileStorage
 import io.github.controlbridge.ui.main.AboutScreen
 import io.github.controlbridge.ui.main.GPEmulationScreen
@@ -54,16 +61,72 @@ import io.github.controlbridge.ui.settings.SettingsScreen
 import io.github.controlbridge.ui.settings.ThemeSettingsScreen
 import io.github.controlbridge.utils.settings.GlobalConfig
 import io.github.controlbridge.viewmodel.GPEmulationViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val gpEmulationViewModel by viewModels<GPEmulationViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        if (savedInstanceState == null) {
+            handlePresetIntent(intent)
+        }
         setContent {
             ControlBridgeTheme {
                 ControlBridgeApp(viewmodel = remember { gpEmulationViewModel })
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handlePresetIntent(intent)
+    }
+
+    private fun handlePresetIntent(intent: Intent?) {
+        intent ?: return
+        when (intent.action) {
+            Intent.ACTION_VIEW -> {
+                val uri = intent.data ?: return
+                if (uri.scheme == PresetCodec.LINK_SCHEME) {
+                    PresetImportBus.submitLink(uri.toString())
+                } else {
+                    readPresetUri(uri)
+                }
+            }
+            Intent.ACTION_SEND -> {
+                val stream = IntentCompat.getParcelableExtra(
+                    intent,
+                    Intent.EXTRA_STREAM,
+                    Uri::class.java
+                )
+                if (stream != null) {
+                    readPresetUri(stream)
+                } else {
+                    intent.getStringExtra(Intent.EXTRA_TEXT)
+                        ?.trim()
+                        ?.takeIf { it.startsWith("${PresetCodec.LINK_SCHEME}://") }
+                        ?.let { PresetImportBus.submitLink(it) }
+                }
+            }
+        }
+    }
+
+    private fun readPresetUri(uri: Uri) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { PresetIO.readText(this@MainActivity, uri) }
+            }
+            result.onSuccess { PresetImportBus.submitFile(it) }
+                .onFailure {
+                    PresetImportBus.submitError(
+                        it.message ?: "Could not read the preset file."
+                    )
+                }
         }
     }
 }

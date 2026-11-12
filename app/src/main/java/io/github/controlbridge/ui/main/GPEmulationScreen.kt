@@ -11,6 +11,7 @@ package io.github.controlbridge.ui.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -1176,17 +1177,20 @@ fun EditPanel(
 @Composable
 fun FullScreen() {
     val context = LocalContext.current
-    val window = (context as Activity).window
+    val activity = context as Activity
+    val window = activity.window
     val controller = remember {
         WindowCompat.getInsetsController(window, window.decorView)
     }
 
     DisposableEffect(Unit) {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         controller.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         controller.hide(WindowInsetsCompat.Type.systemBars())
 
         onDispose {
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             controller.show(WindowInsetsCompat.Type.systemBars())
         }
     }
