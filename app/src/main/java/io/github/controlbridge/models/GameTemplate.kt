@@ -9,11 +9,6 @@ enum class GameTemplate(
         id = "default",
         displayName = "Standard Controller",
         description = "Standard Xbox 360 controller."
-    ),
-    EFOOTBALL(
-        id = "efootball",
-        displayName = "eFootball (Remapped)",
-        description = "eFootball mobile type controller, buttons Remapped into mobile type."
     )
     // Add new game templates here in the future:
     // EA_FC(id = "ea_fc", displayName = "EA Sports FC", description = "Classic FC mobile touch controls and skill moves."),

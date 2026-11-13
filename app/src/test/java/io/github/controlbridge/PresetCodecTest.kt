@@ -27,7 +27,16 @@ class PresetCodecTest {
 
     @Test
     fun fileRoundTripPreservesProfile() {
-        val original = ProfileStorage.createDefaultEFootball("eFootball Share")
+        val base = ProfileStorage.createDefaultProfile("Shared")
+        val mode = base.modes.first().copy(
+            guideText = "A pass\nB dash",
+            mappings = base.modes.first().mappings + Mapping(
+                controlId = "btn_x",
+                gesture = GestureType.SWIPE_RIGHT,
+                action = MappingAction.MultiButton(listOf(GamepadKey.RT, GamepadKey.X))
+            )
+        )
+        val original = base.copy(modes = listOf(mode), activeModeId = mode.id)
 
         val decoded = PresetCodec.decode(PresetCodec.encode(original)).getOrThrow()
 
@@ -36,16 +45,13 @@ class PresetCodecTest {
         assertEquals(original.layout.elements.size, decoded.layout.elements.size)
         assertEquals(original.activeModeId, decoded.activeModeId)
 
-        val originalShot = original.modes.first { it.name == "Standard style" }
+        val originalShot = original.modes.first()
             .mappings.first { it.controlId == "btn_x" && it.gesture == GestureType.SWIPE_RIGHT }
-        val decodedShot = decoded.modes.first { it.name == "Standard style" }
+        val decodedShot = decoded.modes.first()
             .mappings.first { it.controlId == "btn_x" && it.gesture == GestureType.SWIPE_RIGHT }
 
         assertEquals(originalShot.action, decodedShot.action)
-        assertEquals(
-            original.modes.first { it.name == "Standard style" }.guideText,
-            decoded.modes.first { it.name == "Standard style" }.guideText
-        )
+        assertEquals("A pass\nB dash", decoded.modes.first().guideText)
     }
 
     @Test
@@ -216,10 +222,10 @@ class PresetCodecTest {
     @Test
     fun generatesUniqueNames() {
         assertEquals(
-            "eFootball (3)",
+            "Profile (3)",
             ProfileStorage.generateUniqueName(
-                "eFootball",
-                setOf("eFootball", "eFootball (2)")
+                "Profile",
+                setOf("Profile", "Profile (2)")
             )
         )
     }

@@ -9,11 +9,11 @@
   <img src="https://img.shields.io/badge/Android-10%2B-green.svg" alt="Min SDK: Android 10">
 </p>
 
-> **Note:** ControlBridge is a feature fork of [PadConnect](https://github.com/Ishan09811/PadConnect) that adds gesture-based button remapping, button combinations, macros, and a visual layout editor on top of the original PadConnect experience.
+> **Note:** ControlBridge is a standalone fork of [PadConnect](https://github.com/Ishan09811/PadConnect) that adds gesture-based button remapping, button combinations, macros, and a visual layout editor on top of the original PadConnect experience.
 
 ---
 
-PadConnect is an open-source Android software that transforms your phone into a low-latency virtual Xbox 360 controller for PC. ControlBridge is a fork of PadConnect, What makes ControlBridge unique is its **gesture-based remapping system** — every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons — **no need to reach for extra on-screen buttons with your forefingers**.
+PadConnect is an open-source Android software that transforms your phone into a low-latency virtual Xbox 360 controller for PC. ControlBridge is a standalone fork of PadConnect, What makes ControlBridge unique is its **gesture-based remapping system**, every on-screen button supports **tap and 4-directional swipe gestures**, each independently remappable to any button, button combination, macro sequence, or mode switch. This means you can access controls like RT, RB, LB, LT, R3, and L3 directly through swipe gestures on your existing face buttons, **no need to reach for extra on-screen buttons with your forefingers**. It also supports **preset sharing** — share any profile with others as a `.cbpreset` file or a `controlbridge://` link.
 
 ## Features
 
@@ -227,7 +227,7 @@ Contributions are welcome! To get started:
 
 6. **Open a Pull Request** against the `main` branch — describe what you changed and why
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines and code of conduct.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 

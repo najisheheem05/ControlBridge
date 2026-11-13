@@ -15,45 +15,10 @@ class ProfileSerializationTest {
     }
 
     @Test
-    fun testDefaultEFootballProfile() {
-        val profile = ProfileStorage.createDefaultEFootball()
-        assertEquals("eFootball", profile.name)
-        assertEquals(3, profile.modes.size)
-
-        val standardMode = profile.modes.find { it.name == "Standard style" }
-        assertNotNull(standardMode)
-        assertTrue(standardMode!!.isDefault)
-
-        val pressureMode = profile.modes.find { it.name == "Pressure style" }
-        assertNotNull(pressureMode)
-        assertFalse(pressureMode!!.isDefault)
-
-        val menuMode = profile.modes.find { it.name == "Menu" }
-        assertNotNull(menuMode)
-        assertFalse(menuMode!!.isDefault)
-
-        // Verify swipe mappings exist in Standard style mode
-        val stunningShotMapping = standardMode.mappings.find {
-            it.controlId == "btn_x" && it.gesture == GestureType.SWIPE_RIGHT
-        }
-        assertNotNull(stunningShotMapping)
-        assertTrue(stunningShotMapping!!.action is MappingAction.MultiButton)
-        val multiAction = stunningShotMapping.action as MappingAction.MultiButton
-        assertTrue(GamepadKey.X in multiAction.keys && GamepadKey.RT in multiAction.keys)
-
-        // Verify Menu mode has only pure TAP mappings
-        assertTrue(menuMode.mappings.all { it.gesture == GestureType.TAP })
-    }
-
-    @Test
     fun testCreateFromTemplate() {
         val defaultProfile = ProfileStorage.createFromTemplate(GameTemplate.DEFAULT, "MyXbox")
         assertEquals("MyXbox", defaultProfile.name)
         assertEquals(1, defaultProfile.modes.size)
-
-        val efootballProfile = ProfileStorage.createFromTemplate(GameTemplate.EFOOTBALL, "MyEfootball")
-        assertEquals("MyEfootball", efootballProfile.name)
-        assertEquals(3, efootballProfile.modes.size)
     }
 
     @Test
